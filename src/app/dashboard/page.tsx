@@ -3,14 +3,23 @@ import { Header } from "@/components/layout/Header";
 import { MetricsSection } from "@/features/dashboard/components/MetricsSection";
 import { EvolutionChart } from "@/features/dashboard/components/EvolutionChart";
 import { PaymentChart } from "@/features/dashboard/components/PaymentChart";
-import { RecentChargesTable } from "@/components/dashboard/RecentChargesTable";
+import { RecentChargesTable } from "@/features/dashboard/components/RecentChargesTable";
 import { useDashboardData } from "@/features/dashboard/hooks/useDashboardData";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 
+/**
+ * Documentação: DashboardPage
+ * Esta é a página principal do dashboard.
+ * - Orquestra todos os componentes do dashboard.
+ * - Utiliza o hook `useDashboardData` para buscar e gerenciar os dados.
+ * - Passa os dados para os componentes filhos (`MetricsSection`, `EvolutionChart`, etc.).
+ * - Gerencia os estados de carregamento e erro para toda a página.
+ */
 export const DashboardPage = () => {
   const { data, loading, error } = useDashboardData();
 
+  // Tratamento de erro centralizado
   if (error) {
     return (
       <div className="flex h-screen bg-bg-secondary">
@@ -42,11 +51,13 @@ export const DashboardPage = () => {
               <EvolutionChart data={data?.evolution} loading={loading} />
             </ErrorBoundary>
             <ErrorBoundary>
+              {/* Passando os dados corretos como 'data' para o PaymentChart */}
               <PaymentChart data={data?.payments} loading={loading} />
             </ErrorBoundary>
           </section>
           
           <ErrorBoundary>
+            {/* O estado de 'loading' também se aplica à tabela */}
             {loading ? (
               <div className="flex justify-center py-8">
                 <LoadingSpinner size="lg" />

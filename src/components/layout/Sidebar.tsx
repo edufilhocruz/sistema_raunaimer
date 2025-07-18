@@ -1,44 +1,101 @@
-import { Home, Building2, Users, DollarSign, Settings } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useLocation, Link } from "react-router-dom";
+import { Home, Building2, Users, DollarSign, Settings, BarChart2, ChevronDown, UploadCloud, FileText, Send } from "lucide-react"; // Adicionados novos ícones
 import { cn } from "@/lib/utils";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface SidebarProps {
   className?: string;
 }
 
-const navigation = [
-  { name: "Visão Geral", href: "#", icon: Home, current: true },
-  { name: "Condomínios", href: "#", icon: Building2, current: false },
-  { name: "Moradores", href: "#", icon: Users, current: false },
-  { name: "Cobranças", href: "#", icon: DollarSign, current: false },
-  { name: "Configurações", href: "#", icon: Settings, current: false },
-];
-
 export function Sidebar({ className }: SidebarProps) {
+  const location = useLocation();
+  const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({});
+
+  const navigation = [
+    { name: "Visão Geral", href: "/", icon: Home },
+    { name: "Condomínios", href: "/condominio", icon: Building2 },
+    { name: "Moradores", href: "#", icon: Users },
+    { 
+      name: "Cobranças", 
+      icon: DollarSign,
+      subPath: "/cobranca",
+      children: [
+        { name: "Enviar Cobrança", href: "/cobranca/nova", icon: Send },
+        { name: "Enviar Cobrança em Massa", href: "/cobrancas/envio-em-massa", icon: Users }, // Usando ícone de 'Users'
+        { name: "Importação em Massa", href: "/cobrancas/importacao", icon: UploadCloud },
+        { name: "Modelos de Carta", href: "/cobrancas/modelos", icon: FileText },
+        ]
+    },
+    { 
+      name: "Relatórios", 
+      icon: BarChart2,
+      subPath: "/relatorios",
+      children: [
+        { name: "Histórico de Inadimplência", href: "/relatorios/historico-inadimplencia" },
+        { name: "Sem Cobrança no Mês", href: "/relatorios/sem-cobranca" },
+        { name: "Histórico de Cobranças", href: "/relatorios/historico-cobrancas" },
+      ]
+    },
+    { name: "Configurações", href: "#", icon: Settings },
+  ];
+
+  useEffect(() => {
+    navigation.forEach(item => {
+      if (item.subPath && location.pathname.startsWith(item.subPath)) {
+        setOpenMenus(prev => ({ ...prev, [item.name]: true }));
+      }
+    });
+  }, [location.pathname]);
+
+  const toggleMenu = (name: string) => {
+    setOpenMenus(prev => ({ ...prev, [name]: !prev[name] }));
+  };
+
   return (
     <aside className={cn("w-64 bg-sidebar-bg border-r border-border flex flex-col", className)}>
-      {/* Header */}
-      <div className="h-16 flex items-center justify-center px-4 border-b border-border">
-        <h1 className="text-xl font-bold text-gold">CondoAdmin</h1>
+      <div className="h-20 flex items-center justify-center px-6 border-b border-border">
+        <img src="/logotipo.png" alt="Logotipo Raunaimer Monfre" className="h-10" />
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 p-4 space-y-1">
         {navigation.map((item) => {
           const Icon = item.icon;
+          if (item.children) {
+            const isParentActive = location.pathname.startsWith(item.subPath || '');
+            const isOpen = openMenus[item.name] || false;
+
+            return (
+              <Collapsible key={item.name} open={isOpen} onOpenChange={() => toggleMenu(item.name)}>
+                <CollapsibleTrigger className={cn(
+                  "flex items-center justify-between w-full gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200",
+                  isParentActive && !isOpen ? "bg-gold/10 text-gold" : "",
+                  isOpen ? "bg-gold text-white shadow-md" : "text-text-secondary hover:bg-gold-hover hover:text-white"
+                )}>
+                  <div className="flex items-center gap-3"><Icon className="size-5" /><span>{item.name}</span></div>
+                  <ChevronDown className={cn("size-4 transition-transform", isOpen && "rotate-180")} />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="py-1 pl-8 space-y-1">
+                  {item.children.map((subItem) => {
+                     const SubIcon = subItem.icon;
+                     const isSubItemActive = location.pathname === subItem.href;
+                     return (
+                      <Link key={subItem.name} to={subItem.href} className={cn("flex items-center gap-3 px-4 py-2 rounded-md text-sm", isSubItemActive ? "text-gold font-semibold" : "text-text-secondary hover:bg-gray-200")}>
+                        {SubIcon && <SubIcon className="size-4" />}
+                        <span>{subItem.name}</span>
+                      </Link>
+                     )
+                  })}
+                </CollapsibleContent>
+              </Collapsible>
+            )
+          }
+          
+          const isActive = location.pathname === item.href;
           return (
-            <a
-              key={item.name}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200",
-                item.current
-                  ? "bg-gold text-white shadow-md"
-                  : "text-text-secondary hover:bg-gold-hover hover:text-white"
-              )}
-            >
-              <Icon className="size-5" />
-              <span>{item.name}</span>
-            </a>
+            <Link key={item.name} to={item.href || '#'} className={cn("flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200", isActive ? "bg-gold text-white shadow-md" : "text-text-secondary hover:bg-gold-hover hover:text-white")}>
+              <Icon className="size-5" /><span>{item.name}</span>
+            </Link>
           );
         })}
       </nav>

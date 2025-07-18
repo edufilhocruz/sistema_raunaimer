@@ -4,9 +4,14 @@ interface HeaderProps {
   title: string;
 }
 
+/**
+ * Documentação: Header (com Altura Sincronizada)
+ * - A altura foi padronizada para `h-20` para alinhar com o cabeçalho da Sidebar.
+ */
 export function Header({ title }: HeaderProps) {
   return (
-    <header className="h-16 flex items-center justify-between px-6 bg-background border-b border-border">
+    // Alteração aqui: de h-16 para h-20
+    <header className="h-20 flex items-center justify-between px-6 bg-background border-b border-border">
       <h2 className="text-2xl font-semibold text-foreground">{title}</h2>
       
       <div className="flex items-center gap-4">

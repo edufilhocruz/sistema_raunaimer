@@ -1,55 +1,83 @@
 import { PaymentStats } from '@/entities/dashboard/types';
-import { useCharts } from '../hooks/useCharts';
-import { useIntersectionAnimation } from '@/shared/hooks/useAnimation';
+import { Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
 interface PaymentChartProps {
   data: PaymentStats | undefined;
   loading?: boolean;
 }
 
+/**
+ * Documentação: PaymentChart (Versão com Fonte Maior)
+ * - A fonte do subtítulo "Pagos" foi aumentada para 'text-lg' para maior destaque.
+ */
 export const PaymentChart = ({ data, loading }: PaymentChartProps) => {
-  const { paymentChart } = useCharts(undefined, data);
-  const { ref, isVisible } = useIntersectionAnimation();
+  const chartConfig = {
+    pagos: {
+      label: "Pagos",
+      color: "hsl(var(--primary-gold))",
+    },
+    inadimplentes: {
+      label: "Inadimplentes",
+      color: "hsl(var(--chart-secondary))",
+    },
+  };
 
   if (loading) {
     return (
-      <div className="card-enhanced animate-pulse">
-        <div className="p-6">
-          <div className="h-6 bg-border rounded mb-4 w-48"></div>
-          <div className="h-48 bg-border rounded"></div>
-        </div>
+      <div className="card-enhanced animate-pulse p-6">
+        <div className="h-6 bg-border rounded mb-4 w-48"></div>
+        <div className="h-48 w-48 bg-border rounded-full mx-auto"></div>
       </div>
     );
   }
 
-  if (!paymentChart) return null;
+  if (!data) {
+    return (
+      <div className="card-enhanced flex h-[350px] items-center justify-center">
+        <p className="text-text-muted">Sem dados para exibir.</p>
+      </div>
+    );
+  }
+
+  const chartData = [
+    { name: 'pagos', value: data.paidPercentage, fill: "var(--color-pagos)" },
+    { name: 'inadimplentes', value: data.defaultPercentage, fill: "var(--color-inadimplentes)" },
+  ];
 
   return (
-    <div ref={ref} className={`card-enhanced transition-all duration-700 ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
-      <div className="p-6">
+    <div className="card-enhanced flex flex-col">
+      <div className="p-6 flex flex-col flex-grow">
         <h3 className="text-lg font-semibold text-foreground mb-4">Proporção de Pagamentos</h3>
-        
-        <div className="flex items-center justify-center mb-6">
-          <svg width="200" height="200" viewBox="0 0 200 200">
-            <circle cx="100" cy="100" r={paymentChart.radius} fill="hsl(var(--chart-secondary))" />
-            <circle
-              cx="100" cy="100" r={paymentChart.radius} fill="transparent"
-              stroke="hsl(var(--primary-gold))" strokeWidth="20"
-              strokeDasharray={paymentChart.strokeDasharray}
-              strokeDashoffset={paymentChart.strokeDashoffset}
-              transform="rotate(-90 100 100)"
-              className={isVisible ? 'animate-scale-in' : 'scale-0'}
-            />
-            <text className="text-4xl font-bold fill-foreground" textAnchor="middle" x="100" y="105">
-              {paymentChart.centerText}
-            </text>
-            <text className="text-sm fill-text-muted" textAnchor="middle" x="100" y="130">
-              {paymentChart.subtitle}
-            </text>
-          </svg>
+        <div className="relative flex-grow flex items-center justify-center min-h-[240px]">
+          <ChartContainer config={chartConfig} className="absolute inset-0">
+            <ResponsiveContainer>
+              <PieChart>
+                <Tooltip content={<ChartTooltipContent hideLabel />} />
+                <Pie
+                  data={chartData}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius="70%"
+                  outerRadius="90%"
+                  startAngle={90}
+                  endAngle={450}
+                  cornerRadius={5}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+          
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center">
+            <span className="text-4xl font-bold text-foreground">
+              {data.paidPercentage}%
+            </span>
+            {/* Alteração aqui: Tamanho da fonte aumentado para 'text-lg' */}
+            <span className="text-lg text-text-muted">Pagos</span>
+          </div>
         </div>
-        
-        <div className="flex justify-around text-sm">
+
+        <div className="flex justify-around mt-4 text-sm">
           <div className="flex items-center gap-2">
             <span className="size-3 rounded-full bg-gold"></span>
             <span>Pagos</span>
