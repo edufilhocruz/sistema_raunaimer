@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLogs } from '../hooks/useLogs';
+// CORREÇÃO AQUI: Garantindo que os nomes de arquivos e pastas correspondem exatamente.
 import { LogsTable } from './Logs/LogsTable';
 import { LogsFilters } from './Logs/LogsFilters';
 import { LogsPagination } from './Logs/LogsPagination';
