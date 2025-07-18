@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLogs } from '../hooks/useLogs';
-import { LogsTable } from './Logs/LogsTable';
+// Verifique se este caminho e nome de arquivo correspondem EXATAMENTE ao seu arquivo
+import { LogsTable } from './Logs/LogsTable'; 
 import { LogsFilters } from './Logs/LogsFilters';
 import { LogsPagination } from './Logs/LogsPagination';
 
@@ -17,7 +19,9 @@ export const LogsTab = () => {
       </div>
       <LogsFilters />
       {loading ? <Skeleton className="h-96 w-full" /> : <LogsTable logs={logs} />}
-      <LogsPagination currentPage={currentPage} pageCount={pageCount} onPageChange={setCurrentPage} />
+      {pageCount > 0 && (
+         <LogsPagination currentPage={currentPage} pageCount={pageCount} onPageChange={setCurrentPage} />
+      )}
     </div>
   );
 };
