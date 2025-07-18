@@ -14,8 +14,8 @@ export function Sidebar({ className }: SidebarProps) {
 
   const navigation = [
     { name: "Visão Geral", href: "/", icon: Home, subPath: "/" },
-    { name: "Condomínios", href: "/condominio", icon: Building2, subPath: "/condominio" },
-    { name: "Moradores", href: "#", icon: Users, subPath: "/moradores" },
+    { name: "Condomínios", href: "/condominios", icon: Building2, subPath: "/condominios" },
+    { name: "Moradores", href: "/moradores", icon: Users, subPath: "/moradores" },
     { 
       name: "Cobranças", 
       icon: DollarSign,
@@ -32,11 +32,11 @@ export function Sidebar({ className }: SidebarProps) {
       icon: BarChart2,
       subPath: "/relatorios",
       children: [
-        { name: "Inadimplência", href: "/relatorios/historico-inadimplencia" },
-        { name: "Cobranças", href: "/relatorios/historico-cobrancas" },
+        { name: "Inadimplência", href: "/inadimplencia/relatorio" },
+        { name: "Cobranças", href: "/cobrancas/historico" },
       ]
     },
-    { name: "Configurações", href: "#", icon: Settings, subPath: "/configuracoes" },
+    { name: "Configurações", href: "/configuracoes", icon: Settings, subPath: "/configuracoes" },
   ];
 
   useEffect(() => {

@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Condominio {
+  id              String      @id @default(uuid())
+  nome            String
+  cnpj            String      @unique
+  cep             String
+  logradouro      String
+  numero          String
+  complemento     String?
+  bairro          String
+  cidade          String
+  estado          String
+  administradora  String?
+  moradores       Morador[]
+  cobrancas       Cobranca[]
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model Morador {
+  id              String      @id @default(uuid())
+  nome            String
+  email           String      @unique
+  unidade         String      // Ex: "A-101"
+  condominio      Condominio  @relation(fields: [condominioId], references: [id])
+  condominioId    String
+  cobrancas       Cobranca[]
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model ModeloCarta {
+  id              String      @id @default(uuid())
+  titulo          String
+  conteudo        String
+  cobrancas       Cobranca[]
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model Cobranca {
+  id              String      @id @default(uuid())
+  valor           Float
+  vencimento      DateTime
+  status          StatusCobranca @default(PENDENTE)
+  
+  condominio      Condominio  @relation(fields: [condominioId], references: [id])
+  condominioId    String
+  morador         Morador     @relation(fields: [moradorId], references: [id])
+  moradorId       String
+  modeloCarta     ModeloCarta @relation(fields: [modeloCartaId], references: [id])
+  modeloCartaId   String
+
+  dataEnvio       DateTime    @default(now())
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+enum StatusCobranca {
+  PENDENTE
+  PAGO
+  ATRASADO
+}
