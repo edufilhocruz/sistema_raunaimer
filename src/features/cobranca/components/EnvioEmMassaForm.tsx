@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EnvioEmMassaFormData, envioEmMassaSchema, MoradorParaSelecao } from '@/entities/cobranca/types';
@@ -11,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Send } from 'lucide-react';
+import { useModelosDeCarta } from '@/features/modelos/hooks/useModelosDeCarta';
 
 // Dados de exemplo
 const mockCondominios = [
@@ -21,23 +21,13 @@ const mockMoradores: { [key: string]: MoradorParaSelecao[] } = {
   '1': [
     { id: '101', nome: 'Sofia Almeida', unidade: 'A-101', email: 'sofia@email.com' },
     { id: '102', nome: 'Carlos Pereira', unidade: 'A-102', email: 'carlos@email.com' },
-    { id: '103', nome: 'Beatriz Costa', unidade: 'B-201', email: 'beatriz@email.com' },
   ],
   '2': [
     { id: '201', nome: 'Ana Costa', unidade: 'Casa 201', email: 'ana@email.com' },
     { id: '202', nome: 'Ricardo Santos', unidade: 'Casa 202', email: 'ricardo@email.com' },
   ],
 };
-const mockModelos = [
-  { id: 'm1', nome: 'Cobrança de Aluguel' },
-  { id: 'm2', nome: 'Cobrança de Aluguel Atrasado' },
-];
 
-/**
- * Documentação: EnvioEmMassaForm (Versão Final e Estável)
- * - Lógica de checkboxes totalmente refatorada para ser robusta e evitar erros de renderização.
- * - Utiliza <Controller> para gerir o estado da lista de moradores selecionados.
- */
 export const EnvioEmMassaForm = () => {
   const form = useForm<EnvioEmMassaFormData>({
     resolver: zodResolver(envioEmMassaSchema),
@@ -46,10 +36,11 @@ export const EnvioEmMassaForm = () => {
 
   const selectedCondominioId = form.watch('condominioId');
   const moradoresDoCondominio = selectedCondominioId ? mockMoradores[selectedCondominioId] : [];
+  const { modelos } = useModelosDeCarta();
 
   function onSubmit(data: EnvioEmMassaFormData) {
     console.log('Dados para envio em massa:', data);
-    alert(`${data.moradoresIds.length} cobranças enviadas com sucesso! (Verifique o console)`);
+    alert(`${data.moradoresIds.length} cobranças enviadas com sucesso!`);
   }
 
   return (
@@ -65,14 +56,48 @@ export const EnvioEmMassaForm = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField control={form.control} name="condominioId" render={({ field }) => ( <FormItem> <FormLabel>1. Selecione o Condomínio</FormLabel> <Select onValueChange={(value) => { field.onChange(value); form.setValue('moradoresIds', []); }} defaultValue={field.value}> <FormControl> <SelectTrigger> <SelectValue placeholder="Escolha um condomínio..." /> </SelectTrigger> </FormControl> <SelectContent> {mockCondominios.map(condo => ( <SelectItem key={condo.id} value={condo.id}>{condo.nome}</SelectItem> ))} </SelectContent> </Select> <FormMessage /> </FormItem> )} />
-                <FormField control={form.control} name="modeloId" render={({ field }) => ( <FormItem> <FormLabel>2. Selecione o Modelo de Carta</FormLabel> <Select onValueChange={field.onChange} defaultValue={field.value}> <FormControl> <SelectTrigger> <SelectValue placeholder="Escolha um modelo..." /> </SelectTrigger> </FormControl> <SelectContent> {mockModelos.map(modelo => ( <SelectItem key={modelo.id} value={modelo.id}>{modelo.nome}</SelectItem> ))} </SelectContent> </Select> <FormMessage /> </FormItem> )} />
+                <FormField control={form.control} name="condominioId" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>1. Selecione o Condomínio</FormLabel>
+                    <Select onValueChange={(value) => { field.onChange(value); form.setValue('moradoresIds', []); }} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Escolha um condomínio..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {mockCondominios.map(condo => (
+                          <SelectItem key={condo.id} value={condo.id}>{condo.nome}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="modeloId" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>2. Selecione o Modelo de Carta</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Escolha um modelo..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {modelos.map(modelo => (
+                          <SelectItem key={modelo.id} value={modelo.id}>{modelo.titulo}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
               </div>
 
               {selectedCondominioId && moradoresDoCondominio.length > 0 && (
-                <Controller
-                  name="moradoresIds"
+                <FormField
                   control={form.control}
+                  name="moradoresIds"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>3. Selecione os Moradores</FormLabel>
@@ -82,7 +107,7 @@ export const EnvioEmMassaForm = () => {
                             <TableRow>
                               <TableHead className="w-[50px]">
                                 <Checkbox
-                                  checked={field.value.length === moradoresDoCondominio.length}
+                                  checked={field.value.length === moradoresDoCondominio.length && moradoresDoCondominio.length > 0}
                                   onCheckedChange={(checked) => {
                                     const allIds = moradoresDoCondominio.map(m => m.id);
                                     field.onChange(checked ? allIds : []);
@@ -101,10 +126,11 @@ export const EnvioEmMassaForm = () => {
                                   <Checkbox
                                     checked={field.value.includes(morador.id)}
                                     onCheckedChange={(checked) => {
-                                      const newValue = checked
-                                        ? [...field.value, morador.id]
-                                        : field.value.filter((id) => id !== morador.id);
-                                      field.onChange(newValue);
+                                      const currentIds = field.value || [];
+                                      const newIds = checked
+                                        ? [...currentIds, morador.id]
+                                        : currentIds.filter((id) => id !== morador.id);
+                                      field.onChange(newIds);
                                     }}
                                   />
                                 </TableCell>

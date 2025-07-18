@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { Home, Building2, Users, DollarSign, Settings, BarChart2, ChevronDown, UploadCloud, FileText, Send } from "lucide-react"; // Adicionados novos ícones
+import { Home, Building2, Users, DollarSign, Settings, BarChart2, ChevronDown, UploadCloud, FileText, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
@@ -13,19 +13,20 @@ export function Sidebar({ className }: SidebarProps) {
   const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({});
 
   const navigation = [
-    { name: "Visão Geral", href: "/", icon: Home },
-    { name: "Condomínios", href: "/condominio", icon: Building2 },
-    { name: "Moradores", href: "#", icon: Users },
+    { name: "Visão Geral", href: "/", icon: Home, subPath: "/" },
+    { name: "Condomínios", href: "/condominio", icon: Building2, subPath: "/condominio" },
+    { name: "Moradores", href: "#", icon: Users, subPath: "/moradores" },
     { 
       name: "Cobranças", 
       icon: DollarSign,
       subPath: "/cobranca",
       children: [
         { name: "Enviar Cobrança", href: "/cobranca/nova", icon: Send },
-        { name: "Enviar Cobrança em Massa", href: "/cobrancas/envio-em-massa", icon: Users }, // Usando ícone de 'Users'
+        { name: "Envio em Massa", href: "/cobrancas/envio-em-massa", icon: Users },
         { name: "Importação em Massa", href: "/cobrancas/importacao", icon: UploadCloud },
         { name: "Modelos de Carta", href: "/cobrancas/modelos", icon: FileText },
-        ]
+        { name: "Histórico de Cobranças", href: "/cobrancas/historico", icon: BarChart2 },
+      ]
     },
     { 
       name: "Relatórios", 
@@ -37,15 +38,14 @@ export function Sidebar({ className }: SidebarProps) {
         { name: "Histórico de Cobranças", href: "/relatorios/historico-cobrancas" },
       ]
     },
-    { name: "Configurações", href: "#", icon: Settings },
+    { name: "Configurações", href: "#", icon: Settings, subPath: "/configuracoes" },
   ];
 
   useEffect(() => {
-    navigation.forEach(item => {
-      if (item.subPath && location.pathname.startsWith(item.subPath)) {
-        setOpenMenus(prev => ({ ...prev, [item.name]: true }));
-      }
-    });
+    const activeMenu = navigation.find(item => item.subPath && location.pathname.startsWith(item.subPath));
+    if (activeMenu && activeMenu.children) {
+      setOpenMenus(prev => ({ ...prev, [activeMenu.name]: true }));
+    }
   }, [location.pathname]);
 
   const toggleMenu = (name: string) => {

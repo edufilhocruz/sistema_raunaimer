@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 interface HeaderProps {
   title: string;
@@ -15,9 +16,11 @@ export function Header({ title }: HeaderProps) {
       <h2 className="text-2xl font-semibold text-foreground">{title}</h2>
       
       <div className="flex items-center gap-4">
-        <Button className="bg-gold hover:bg-gold-hover text-white font-semibold transition-colors duration-200">
-          Nova Cobrança
-        </Button>
+        <Link to="/cobranca/nova">
+          <Button className="bg-gold hover:bg-gold-hover text-white font-semibold transition-colors duration-200">
+            Nova Cobrança
+          </Button>
+        </Link>
         
         <div 
           className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
