@@ -25,7 +25,6 @@ export function Sidebar({ className }: SidebarProps) {
         { name: "Envio em Massa", href: "/cobrancas/envio-em-massa", icon: Users },
         { name: "Importação em Massa", href: "/cobrancas/importacao", icon: UploadCloud },
         { name: "Modelos de Carta", href: "/cobrancas/modelos", icon: FileText },
-        { name: "Histórico de Cobranças", href: "/cobrancas/historico", icon: BarChart2 },
       ]
     },
     { 
@@ -33,9 +32,8 @@ export function Sidebar({ className }: SidebarProps) {
       icon: BarChart2,
       subPath: "/relatorios",
       children: [
-        { name: "Histórico de Inadimplência", href: "/relatorios/historico-inadimplencia" },
-        { name: "Sem Cobrança no Mês", href: "/relatorios/sem-cobranca" },
-        { name: "Histórico de Cobranças", href: "/relatorios/historico-cobrancas" },
+        { name: "Inadimplência", href: "/relatorios/historico-inadimplencia" },
+        { name: "Cobranças", href: "/relatorios/historico-cobrancas" },
       ]
     },
     { name: "Configurações", href: "#", icon: Settings, subPath: "/configuracoes" },
@@ -55,7 +53,7 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <aside className={cn("w-64 bg-sidebar-bg border-r border-border flex flex-col", className)}>
       <div className="h-20 flex items-center justify-center px-6 border-b border-border">
-        <img src="/logotipo.png" alt="Logotipo Raunaimer Monfre" className="h-10" />
+        <img src="/logotipo.png" alt="Logotipo Raunaimer Monfre" className="h-24" />
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
