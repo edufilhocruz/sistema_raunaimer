@@ -6,9 +6,10 @@ import { ConfiguracaoNavegacao } from '@/features/configuracao/components/Config
 
 // Importe todos os componentes de aba
 import { UsuariosTab } from "@/features/configuracao/components/UsuariosTab";
-import { EmailTab } from "@/features/configuracao/components/Email/EmailForm";
+import { EmailTab } from "@/features/configuracao/components/EmailTab";
 import { LogsTab } from "@/features/configuracao/components/LogsTab";
-import { SegurancaTab } from "@/features/configuracao/components/Seguranca/SegurancaForm";
+import { SegurancaTab } from "@/features/configuracao/components/SegurancaTab";
+
 
 const ConfiguracaoPage = () => {
   const [activeTab, setActiveTab] = useState('usuarios');

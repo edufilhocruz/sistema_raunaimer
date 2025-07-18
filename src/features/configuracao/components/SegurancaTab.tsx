@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { segurancaFormSchema, SegurancaFormData } from '../../types';
+import { segurancaFormSchema, SegurancaFormData } from '../types';
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from '@/components/ui/switch';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'; // Importação corrigida
-import { useSegurancaConfig } from '../../hooks/useSegurancaConfig';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useSegurancaConfig } from '../hooks/useSegurancaConfig';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/use-toast';
 
@@ -19,15 +19,12 @@ export const SegurancaTab = () => {
   });
 
   useEffect(() => {
-    if (config) form.reset(config);
+    if (Object.keys(config).length > 0) form.reset(config);
   }, [config, form]);
 
   const onSubmit = (data: SegurancaFormData) => {
     console.log("Salvando configurações de segurança:", data);
-    toast({
-      title: "Sucesso!",
-      description: "As configurações de segurança foram salvas.",
-    });
+    toast({ title: "Sucesso!", description: "As configurações de segurança foram salvas." });
   };
   
   if (loading) return <Skeleton className="h-[500px] w-full" />;

@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { emailFormSchema, EmailFormData } from '../../types'; // Caminho corrigido
+import { emailFormSchema, EmailFormData } from '../types';
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useEmailConfig } from '../../hooks/useEmailConfig'; // Caminho corrigido
+import { useEmailConfig } from '../hooks/useEmailConfig';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from "@/components/ui/use-toast";
 
@@ -20,22 +20,15 @@ export const EmailTab = () => {
   });
 
   useEffect(() => {
-    if (config) {
-      form.reset(config);
-    }
+    if (Object.keys(config).length > 0) form.reset(config);
   }, [config, form]);
 
   const onSubmit = (data: EmailFormData) => {
     console.log("Salvando configurações de e-mail:", data);
-    toast({
-      title: "Sucesso!",
-      description: "As configurações de e-mail foram salvas.",
-    });
+    toast({ title: "Sucesso!", description: "As configurações de e-mail foram salvas." });
   };
 
-  if (loading) {
-    return <Skeleton className="h-[500px] w-full" />;
-  }
+  if (loading) return <Skeleton className="h-[500px] w-full" />;
 
   return (
     <div className="space-y-6">

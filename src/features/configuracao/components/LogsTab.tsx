@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLogs } from '../hooks/useLogs';
-// Verifique se este caminho e nome de arquivo correspondem EXATAMENTE ao seu arquivo
-import { LogsTable } from './Logs/LogsTable'; 
+import { LogsTable } from './Logs/LogsTable';
 import { LogsFilters } from './Logs/LogsFilters';
 import { LogsPagination } from './Logs/LogsPagination';
 
