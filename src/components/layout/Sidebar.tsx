@@ -21,9 +21,11 @@ export function Sidebar({ className }: SidebarProps) {
       icon: DollarSign,
       subPath: "/cobranca",
       children: [
-        { name: "Enviar Cobrança", href: "/cobranca/nova", icon: Send },
+        // Renomeado para refletir a ação de seleção
+        { name: "Cobrança Individual", href: "/cobranca/nova", icon: Send }, 
+        // Renomeado para destacar o uso de planilhas
+        { name: "Importar Planilha", href: "/cobrancas/importacao", icon: UploadCloud },
         { name: "Envio em Massa", href: "/cobrancas/envio-em-massa", icon: Users },
-        { name: "Importação em Massa", href: "/cobrancas/importacao", icon: UploadCloud },
         { name: "Modelos de Carta", href: "/cobrancas/modelos", icon: FileText },
       ]
     },

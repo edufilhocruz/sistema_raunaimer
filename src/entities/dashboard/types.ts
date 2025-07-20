@@ -39,3 +39,19 @@ export interface DashboardData {
   payments: PaymentStats;
   recentCharges: RecentCharge[];
 }
+export interface CondominiumChargeStatus {
+  id: string;
+  name: string;
+  chargesSent: number;
+  totalUnits: number;
+}
+
+// Atualizamos DashboardData para incluir a nova lista
+export interface DashboardData {
+  metrics: DashboardMetrics;
+  evolution: EvolutionData;
+  payments: PaymentStats;
+  recentCharges: RecentCharge[];
+  condominiumStatus: CondominiumChargeStatus[]; // NOVO CAMPO
+}
+export type DateRangeFilter = '7d' | '14d' | '30d';

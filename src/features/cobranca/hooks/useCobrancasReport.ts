@@ -1,59 +1,79 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { HistoricoCobranca, CobrancasKpis } from '../types';
+import { DateRange } from 'react-day-picker';
+import { HistoricoCobranca, CobrancasKpis, CobrancaStatus } from '../types';
 import cobrancaService from '../services/cobrancaService';
 
-/**
- * Hook customizado para gerenciar a lógica e o estado do Relatório de Cobranças.
- * É o "cérebro" da nossa feature.
- */
+interface Filters {
+  status: CobrancaStatus | 'todos';
+  dateRange?: DateRange;
+}
+
 export const useCobrancasReport = () => {
-  const [data, setData] = useState<HistoricoCobranca[]>([]);
+  const [allData, setAllData] = useState<HistoricoCobranca[]>([]);
+  const [filters, setFilters] = useState<Filters>({ status: 'todos' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchReportData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const reportData = await cobrancaService.getHistoricoCobrancas();
-      setData(reportData);
-    } catch (err) {
-      setError('Falha ao carregar o histórico de cobranças.');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const reportData = await cobrancaService.getHistoricoCobrancas();
+        setAllData(reportData);
+      } catch (err) {
+        setError('Falha ao carregar o histórico de cobranças.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
-  useEffect(() => {
-    fetchReportData();
-  }, [fetchReportData]);
+  // Lógica de filtragem corrigida e otimizada
+  const filteredData = useMemo(() => {
+    return allData.filter(item => {
+      const statusMatch = filters.status === 'todos' || item.status === filters.status;
+      
+      // Se o status não corresponder, podemos parar aqui.
+      if (!statusMatch) {
+        return false;
+      }
 
-  // `useMemo` garante que os KPIs só sejam recalculados quando os dados mudarem,
-  // otimizando a performance.
+      // Se um filtro de data existir, aplicamos a lógica de data.
+      if (filters.dateRange?.from) {
+        const itemDate = new Date(item.dataEnvio);
+        const fromDate = filters.dateRange.from;
+        const toDate = filters.dateRange.to || fromDate;
+
+        // Compara apenas a data, ignorando a hora, para evitar problemas de fuso horário.
+        const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+        return startOfDay(itemDate) >= startOfDay(fromDate) && startOfDay(itemDate) <= startOfDay(toDate);
+      }
+      
+      // Se o status corresponde e não há filtro de data, o item é incluído.
+      return true;
+    });
+  }, [allData, filters]);
+
   const kpis = useMemo<CobrancasKpis | null>(() => {
-    if (!data || data.length === 0) return null;
-
-    const totalArrecadado = data
-      .filter(c => c.status === 'Pago')
-      .reduce((acc, item) => acc + item.valor, 0);
-
-    const totalPendente = data
-      .filter(c => c.status !== 'Pago')
-      .reduce((acc, item) => acc + item.valor, 0);
-
-    const totalCobrancas = data.length;
-    const cobrancasPagas = data.filter(c => c.status === 'Pago').length;
-    const taxaSucesso = totalCobrancas > 0 ? (cobrancasPagas / totalCobrancas) * 100 : 0;
+    const dataToCalculate = filteredData;
+    if (dataToCalculate.length === 0 && !loading) return { totalArrecadado: 0, totalPendente: 0, taxaSucesso: 0 };
+    if (dataToCalculate.length === 0) return null;
+    
+    const totalArrecadado = dataToCalculate.filter(c => c.status === 'Pago').reduce((acc, item) => acc + item.valor, 0);
+    const totalPendente = dataToCalculate.filter(c => c.status !== 'Pago').reduce((acc, item) => acc + item.valor, 0);
+    const totalCobrancas = totalArrecadado + totalPendente;
+    const taxaSucesso = totalCobrancas > 0 ? (totalArrecadado / totalCobrancas) * 100 : 0;
 
     return { totalArrecadado, totalPendente, taxaSucesso };
-  }, [data]);
+  }, [filteredData, loading]);
 
   return {
-    data,
+    data: filteredData,
     kpis,
     loading,
     error,
-    refresh: fetchReportData // Expomos uma função para recarregar os dados
+    setFilters
   };
 };
