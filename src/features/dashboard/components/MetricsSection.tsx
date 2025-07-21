@@ -65,7 +65,7 @@ export const MetricsSection = ({ metrics, loading }: MetricsSectionProps) => {
         value={animatedValues.defaulters}
       />
       <MetricCard
-        title="Cobranças Enviadas (Mês)"
+        title="Cobranças Enviadas"
         value={animatedValues.charges}
         trend={calculated?.growth.charges}
       />

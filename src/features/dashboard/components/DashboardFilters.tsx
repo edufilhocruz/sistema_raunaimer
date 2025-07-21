@@ -18,10 +18,7 @@ export const DashboardFilters = ({ condominios, onCondominioChange, onDateRangeC
   };
 
   return (
-    // Contêiner principal que alinha os itens
     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-      
-      {/* Seletor de Condomínio (ficará à esquerda) */}
       <Select defaultValue="todos" onValueChange={onCondominioChange}>
         <SelectTrigger className="w-full md:w-[320px]">
           <SelectValue placeholder="Filtrar por condomínio..." />
@@ -34,9 +31,10 @@ export const DashboardFilters = ({ condominios, onCondominioChange, onDateRangeC
         </SelectContent>
       </Select>
       
-      {/* Seletor de Período (ficará à direita) */}
       <div className="w-full md:w-auto flex items-center justify-start md:justify-end gap-2">
         <span className="text-sm text-muted-foreground mr-2">Período:</span>
+        <Button variant={activeRange === 'hoje' ? 'default' : 'outline'} size="sm" onClick={() => handleRangeClick('hoje')}>Hoje</Button>
+        <Button variant={activeRange === '3d' ? 'default' : 'outline'} size="sm" onClick={() => handleRangeClick('3d')}>3 dias</Button>
         <Button variant={activeRange === '7d' ? 'default' : 'outline'} size="sm" onClick={() => handleRangeClick('7d')}>7 dias</Button>
         <Button variant={activeRange === '14d' ? 'default' : 'outline'} size="sm" onClick={() => handleRangeClick('14d')}>14 dias</Button>
         <Button variant={activeRange === '30d' ? 'default' : 'outline'} size="sm" onClick={() => handleRangeClick('30d')}>30 dias</Button>
