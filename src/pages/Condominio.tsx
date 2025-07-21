@@ -4,16 +4,19 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { toast } from '@/components/ui/use-toast';
 
 import { useCondominios } from '@/features/condominio/hooks/useCondominios';
 import { CondominiosTable } from '@/features/condominio/components/CondominiosTable';
 import { CondominiosActions } from '@/features/condominio/components/CondominiosActions';
 import { CondominioForm } from '@/features/condominio/components/CondominioForm';
 import { CondominioFormData } from '@/features/condominio/types';
+import condominioService from '@/features/condominio/services/condominioService';
 
 const CondominiosPage = () => {
-    const { condominios, loading, error } = useCondominios();
+    const { condominios, loading, error, refresh } = useCondominios();
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredCondominios = useMemo(() => {
@@ -24,11 +27,26 @@ const CondominiosPage = () => {
         );
     }, [condominios, searchTerm]);
 
-    const handleSave = (data: CondominioFormData) => {
-        console.log("Salvando condomínio:", data);
-        setIsFormOpen(false);
-        // Futuramente, aqui chamaremos uma função do hook para salvar os dados na API
-        // e depois chamar a função `refresh()` do hook useCondominios
+    const handleSave = async (data: CondominioFormData) => {
+        setIsSaving(true);
+        try {
+            await condominioService.createCondominio(data);
+            toast({
+                title: "Sucesso!",
+                description: `O condomínio "${data.nome}" foi criado.`,
+            });
+            setIsFormOpen(false);
+            refresh(); // Atualiza a lista na tela
+        } catch (err) {
+            console.error("Falha ao criar condomínio:", err);
+            toast({
+                variant: "destructive",
+                title: "Erro",
+                description: "Não foi possível criar o condomínio. Verifique os dados e tente novamente.",
+            });
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -58,7 +76,11 @@ const CondominiosPage = () => {
             </div>
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                 <DialogContent className="max-w-4xl">
-                    <CondominioForm onSave={handleSave} />
+                    <CondominioForm 
+                        onSave={handleSave} 
+                        isSaving={isSaving} 
+                        onCancel={() => setIsFormOpen(false)}
+                    />
                 </DialogContent>
             </Dialog>
         </>

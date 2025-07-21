@@ -33,10 +33,15 @@ model Morador {
   id              String      @id @default(uuid())
   nome            String
   email           String      @unique
-  unidade         String      // Ex: "A-101"
+  bloco           String
+  apartamento     String
+  telefone        String
   condominio      Condominio  @relation(fields: [condominioId], references: [id])
   condominioId    String
   cobrancas       Cobranca[]
+  
+  // NOVO CAMPO ADICIONADO AQUI
+  statusPagamento StatusPagamento @default(PENDENTE)
 
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -74,4 +79,10 @@ enum StatusCobranca {
   PENDENTE
   PAGO
   ATRASADO
+}
+
+enum StatusPagamento {
+  EM_DIA
+  ATRASADO
+  PENDENTE
 }

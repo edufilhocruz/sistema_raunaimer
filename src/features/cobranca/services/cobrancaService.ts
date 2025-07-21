@@ -1,36 +1,36 @@
-import { HistoricoCobranca } from '../types';
-
-// Mock de dados que simula a resposta de uma futura API.
-const mockCobrancas: HistoricoCobranca[] = [
-  { id: '1', morador: 'Sofia Almeida', condominio: 'Residencial das Flores', valor: 550.00, dataEnvio: '2025-07-15T10:30:00Z', status: 'Pago' },
-  { id: '2', morador: 'Carlos Pereira', condominio: 'Edifício Central', valor: 620.00, dataEnvio: '2025-07-14T14:15:00Z', status: 'Atrasado' },
-  { id: '3', morador: 'Ana Costa', condominio: 'Condomínio Verde', valor: 480.00, dataEnvio: '2025-07-13T09:45:00Z', status: 'Em Aberto' },
-  { id: '4', morador: 'Ricardo Santos', condominio: 'Residencial das Palmeiras', valor: 590.00, dataEnvio: '2025-07-12T16:00:00Z', status: 'Pago' },
-  { id: '5', morador: 'Mariana Oliveira', condominio: 'Edifício Novo Horizonte', valor: 510.00, dataEnvio: '2025-07-11T11:20:00Z', status: 'Atrasado' },
-];
-
+import apiClient from '@/services/apiClient';
 
 /**
- * Interface que define o contrato do serviço de cobrança.
- * Isso é útil para testes e para garantir a consistência da implementação.
+ * Define a estrutura de dados necessária para a importação.
  */
-interface ICobrancaService {
-  getHistoricoCobrancas(): Promise<HistoricoCobranca[]>;
+interface ImportOptions {
+  file: File;
+  condominioId: string;
+  modeloCartaId: string;
 }
 
 /**
- * Implementação do serviço.
- * A responsabilidade dele é unicamente buscar os dados.
+ * Objeto de serviço para todas as operações relacionadas a cobranças.
  */
-const cobrancaService: ICobrancaService = {
-  getHistoricoCobrancas: async (): Promise<HistoricoCobranca[]> => {
-    console.log('Buscando dados do histórico de cobranças...');
-    // Simula a latência de uma chamada de rede real
-    await new Promise(resolve => setTimeout(resolve, 800));
-    // No futuro, aqui teremos a chamada real usando o apiClient:
-    // const { data } = await apiClient.get('/cobrancas/historico');
-    // return data;
-    return mockCobrancas;
+const cobrancaService = {
+  /**
+   * Envia uma planilha e os IDs associados para o backend para processamento em massa.
+   * Utiliza FormData para enviar um arquivo e dados de texto na mesma requisição.
+   * @param options Os dados da importação, incluindo o arquivo e os IDs.
+   * @returns Uma promessa que resolve para a resposta da API (um sumário da operação).
+   */
+  importarPlanilha: async ({ file, condominioId, modeloCartaId }: ImportOptions) => {
+    const formData = new FormData();
+    formData.append('file', file); // 'file' corresponde ao nome no FileInterceptor do NestJS
+    formData.append('condominioId', condominioId);
+    formData.append('modeloCartaId', modeloCartaId);
+
+    const response = await apiClient.post('/cobranca/importar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
   }
 };
 

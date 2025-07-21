@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Send } from 'lucide-react';
-import { useModelosDeCarta } from '@/features/modelos/hooks/useModelosDeCarta';
+import { useModelosDeCarta } from '@/features/modelos/hooks/useModelos';
 
 // Dados de exemplo
 const mockCondominios = [

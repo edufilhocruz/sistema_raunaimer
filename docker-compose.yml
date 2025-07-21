@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: raunaimer-db
+    restart: always
+    ports:
+      # CORREÇÃO: A porta do seu computador (51214) agora está mapeada para a porta do container (5432)
+      - "51214:5432" 
+    environment:
+      # CORREÇÃO: As credenciais agora correspondem à sua DATABASE_URL
+      POSTGRES_USER: ederraunaimer
+      POSTGRES_PASSWORD: 'qbO#2(5&9<Qq' # A senha original, sem codificação de URL
+      POSTGRES_DB: raunaimer
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: raunaimer-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-data:/data
+
+volumes:
+  postgres-data:
+  redis-data:
+  

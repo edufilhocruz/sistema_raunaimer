@@ -1,17 +1,24 @@
-import { Condominio } from '../types';
-
-const mockCondominios: Condominio[] = [
-  { id: '1', nome: 'Residencial das Flores', cnpj: '11.222.333/0001-44', cidade: 'São Paulo', estado: 'SP' },
-  { id: '2', nome: 'Condomínio Vista Verde', cnpj: '44.555.666/0001-77', cidade: 'Rio de Janeiro', estado: 'RJ' },
-  { id: '3', nome: 'Edifício Central', cnpj: '77.888.999/0001-00', cidade: 'Belo Horizonte', estado: 'MG' },
-];
+import { Condominio, CondominioFormData } from '../types';
+import apiClient from '@/services/apiClient';
 
 const condominioService = {
+  /**
+   * Busca a lista de todos os condomínios da API.
+   */
   getCondominios: async (): Promise<Condominio[]> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return mockCondominios;
+    const response = await apiClient.get<Condominio[]>('/condominio');
+    return response.data;
   },
-  // Futuras funções: createCondominio, updateCondominio, etc.
+
+  /**
+   * NOVO: Envia os dados de um novo condomínio para a API para criação.
+   * @param data Os dados do formulário do novo condomínio.
+   * @returns O objeto do condomínio criado pela API.
+   */
+  createCondominio: async (data: CondominioFormData): Promise<Condominio> => {
+    const response = await apiClient.post<Condominio>('/condominio', data);
+    return response.data;
+  },
 };
 
 export default condominioService;

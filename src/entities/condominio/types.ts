@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-export const condominioSchema = z.object({
+// Renomeado para 'condominioFormSchema' para consistência
+export const condominioFormSchema = z.object({
   nome: z.string().min(3, { message: "O nome do condomínio é obrigatório." }),
   cnpj: z.string().min(18, { message: "CNPJ inválido, preencha todos os números." }),
   cep: z.string().min(9, { message: "CEP inválido, preencha todos os números." }),
@@ -13,4 +14,12 @@ export const condominioSchema = z.object({
   administradora: z.string().optional(),
 });
 
-export type CondominioFormData = z.infer<typeof condominioSchema>;
+export type CondominioFormData = z.infer<typeof condominioFormSchema>;
+
+export interface Condominio {
+  id: string;
+  nome: string;
+  cnpj: string;
+  cidade: string;
+  estado: string;
+}

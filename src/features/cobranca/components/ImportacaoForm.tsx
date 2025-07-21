@@ -1,165 +1,85 @@
 'use client';
 
 import React, { useState } from 'react';
-import * as XLSX from 'xlsx';
-import { CobrancaImportada } from '@/entities/cobranca/types'; // Importação corrigida e padronizada
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { UploadCloud, FileCheck2, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { UploadCloud, CheckCircle2, Loader2 } from 'lucide-react';
 import { toast } from "@/components/ui/use-toast";
-
-const emailsExistentes = new Set(['sofia@email.com']);
-
-type ExcelRow = {
-  nome: string;
-  email: string;
-  bloco: string;
-  apto: string;
-  valor: number;
-};
+import cobrancaService from '../services/cobrancaService';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useCondominios } from '@/features/condominio/hooks/useCondominios';
+import { useModelosDeCarta } from '@/features/modelos/hooks/useModelos';
 
 export const ImportacaoForm = () => {
   const [file, setFile] = useState<File | null>(null);
-  const [previewData, setPreviewData] = useState<CobrancaImportada[]>([]);
+  const [condominioId, setCondominioId] = useState<string | null>(null);
+  const [modeloCartaId, setModeloCartaId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const { condominioOptions, loading: loadingCondominios } = useCondominios();
+  const { modelos } = useModelosDeCarta();
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
-    if (!selectedFile) return;
-
-    setFile(selectedFile);
-    setIsProcessing(true);
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        
-        const json = XLSX.utils.sheet_to_json<ExcelRow>(worksheet, {
-          header: ["nome", "email", "bloco", "apto", "valor"]
-        });
-
-        const dataRows = json.slice(1);
-
-        const validatedData = dataRows.map((row, index): CobrancaImportada => {
-          let status: CobrancaImportada['status'] = 'Válido';
-          let mensagem = '';
-
-          if (!row.nome || !row.email || !row.bloco || !row.apto || !row.valor) {
-            status = 'Inválido';
-            mensagem = 'Todos os campos são obrigatórios.';
-          } else if (!/\S+@\S+\.\S+/.test(row.email)) {
-            status = 'Inválido';
-            mensagem = 'Formato de e-mail inválido.';
-          } else if (emailsExistentes.has(row.email)) {
-            status = 'Aviso';
-            mensagem = 'Morador já existe. A cobrança será adicionada a ele.';
-          }
-          
-          return {
-            id: index,
-            nome: row.nome || '',
-            email: row.email || '',
-            bloco: String(row.bloco || ''),
-            apto: String(row.apto || ''),
-            valor: Number(row.valor) || 0,
-            status,
-            mensagem,
-          };
-        });
-        
-        setPreviewData(validatedData);
-
-      } catch (error) {
-        console.error("Erro ao processar o arquivo:", error);
-        toast({ variant: "destructive", title: "Erro", description: "Não foi possível ler o arquivo. Verifique o formato." });
-      } finally {
-        setIsProcessing(false);
-      }
-    };
-    reader.readAsArrayBuffer(selectedFile);
+    setFile(event.target.files?.[0] || null);
   };
 
-  const hasErrors = previewData.some(item => item.status === 'Inválido');
+  const handleImport = async () => {
+    if (!file || !condominioId || !modeloCartaId) {
+      toast({ variant: "destructive", title: "Erro de Validação", description: "Por favor, selecione o condomínio, o modelo de carta e o arquivo." });
+      return;
+    }
 
-  const handleImport = () => {
-    const validRows = previewData.filter(row => row.status !== 'Inválido');
-    console.log("Importando os seguintes dados:", validRows);
-    toast({
-      title: "Importação Concluída!",
-      description: `${validRows.length} cobranças foram importadas com sucesso.`,
-    });
-    setFile(null);
-    setPreviewData([]);
+    setIsProcessing(true);
+    try {
+      const summary = await cobrancaService.importarPlanilha({ file, condominioId, modeloCartaId });
+      toast({
+        title: "Arquivo Enviado!",
+        description: summary.message, // Exibe a mensagem de sucesso da API
+      });
+    } catch (error) {
+      console.error("Falha na importação:", error);
+      toast({ variant: "destructive", title: "Erro na Importação", description: "Não foi possível processar a requisição." });
+    } finally {
+      setIsProcessing(false);
+      setFile(null);
+    }
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      <div className="bg-card p-8 rounded-2xl shadow-sm border text-center">
-        <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-lg font-semibold text-foreground">
-          Importar Cobranças em Massa
-        </h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Selecione um arquivo Excel (.xlsx) com as colunas: Nome, Email, Bloco, Apto, Valor.
-        </p>
-        <div className="mt-6">
-          <Button asChild variant="outline">
-            <label htmlFor="file-upload">
-              {file ? file.name : 'Selecionar Arquivo'}
-              <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".xlsx, .xls" disabled={isProcessing} />
+    <div className="max-w-2xl mx-auto space-y-4">
+      <div className="bg-card p-8 rounded-2xl shadow-sm border space-y-6">
+        <div className="text-center">
+          <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-2 text-lg font-semibold text-foreground">Importar Cobranças da Planilha</h3>
+          <p className="mt-1 text-sm text-muted-foreground">Selecione as opções e o arquivo Excel (.xlsx) para importar.</p>
+        </div>
+
+        <div className="space-y-4">
+          <Select onValueChange={setCondominioId} disabled={loadingCondominios}>
+            <SelectTrigger><SelectValue placeholder={loadingCondominios ? "Carregando..." : "1. Selecione o Condomínio"} /></SelectTrigger>
+            <SelectContent>
+              {condominioOptions.map(condo => <SelectItem key={condo.value} value={condo.value}>{condo.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select onValueChange={setModeloCartaId}>
+            <SelectTrigger><SelectValue placeholder="2. Selecione o Modelo de Carta" /></SelectTrigger>
+            <SelectContent>
+              {modelos.map(modelo => <SelectItem key={modelo.id} value={modelo.id}>{modelo.titulo}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex flex-col items-center gap-4">
+          <Button asChild variant="outline" className="w-full">
+            <label htmlFor="file-upload" className="cursor-pointer">
+              {file ? file.name : '3. Selecionar Arquivo'}
+              <input id="file-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".xlsx, .xls" disabled={isProcessing} />
             </label>
           </Button>
+          <Button size="lg" className="bg-gold hover:bg-gold-hover w-full" disabled={isProcessing || !file || !condominioId || !modeloCartaId} onClick={handleImport}>
+            {isProcessing ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processando...</> : <><CheckCircle2 className="mr-2 h-5 w-5" /> Confirmar e Importar</>}
+          </Button>
         </div>
-        {isProcessing && <p className="text-sm text-muted-foreground mt-2 animate-pulse">Processando arquivo...</p>}
       </div>
-
-      {previewData.length > 0 && (
-        <div className="bg-card rounded-2xl shadow-sm border">
-          <div className="p-6">
-            <h3 className="text-lg font-semibold">Pré-visualização da Importação</h3>
-            <p className="text-sm text-muted-foreground">
-              {`Encontradas ${previewData.length} cobranças. Verifique os dados antes de confirmar.`}
-            </p>
-          </div>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead><TableHead>Unidade</TableHead><TableHead>Email</TableHead><TableHead>Valor</TableHead><TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {previewData.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{item.nome}</TableCell>
-                    <TableCell>{`${item.bloco} - ${item.apto}`}</TableCell>
-                    <TableCell>{item.email}</TableCell>
-                    <TableCell>{`R$ ${item.valor.toFixed(2)}`}</TableCell>
-                    <TableCell>
-                      <Badge variant={item.status === 'Válido' ? 'default' : item.status === 'Aviso' ? 'secondary' : 'destructive'}>
-                        {item.status}
-                      </Badge>
-                      {item.mensagem && <p className="text-xs text-muted-foreground mt-1">{item.mensagem}</p>}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          <div className="p-6 flex justify-end items-center gap-4">
-            {hasErrors && <p className="text-sm text-destructive flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> Corrija os erros no arquivo antes de importar.</p>}
-            <Button size="lg" className="bg-gold hover:bg-gold-hover" disabled={hasErrors} onClick={handleImport}>
-              <CheckCircle2 className="mr-2 h-5 w-5" />
-              Confirmar e Importar
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

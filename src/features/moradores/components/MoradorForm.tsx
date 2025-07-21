@@ -7,11 +7,30 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { IMaskInput } from 'react-imask';
+import { useCondominios } from '@/features/condominio/hooks/useCondominios';
 
-interface Props { onSave: (data: MoradorFormData) => void; }
+interface Props { 
+  onSave: (data: MoradorFormData) => void; 
+}
 
+/**
+ * MoradorForm: Componente de formulário para criar ou editar um morador.
+ * Busca dinamicamente a lista de condomínios da API para popular o seletor.
+ */
 export const MoradorForm = ({ onSave }: Props) => {
-  const form = useForm<MoradorFormData>({ resolver: zodResolver(moradorFormSchema) });
+  const { condominioOptions, loading: loadingCondominios } = useCondominios();
+  
+  const form = useForm<MoradorFormData>({ 
+    resolver: zodResolver(moradorFormSchema),
+    defaultValues: {
+      nome: '',
+      email: '',
+      telefone: '',
+      condominioId: undefined,
+      bloco: '',
+      apartamento: '',
+    }
+  });
 
   return (
     <>
@@ -20,18 +39,31 @@ export const MoradorForm = ({ onSave }: Props) => {
         <DialogDescription>Preencha os dados para cadastrar um novo morador no sistema.</DialogDescription>
       </DialogHeader>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSave)} className="space-y-4 py-4">
-          <FormField control={form.control} name="condominioId" render={({ field }) => (
-            <FormItem><FormLabel>Condomínio</FormLabel>
-              <Select onValueChange={field.onChange}><FormControl><SelectTrigger><SelectValue placeholder="Selecione o condomínio" /></SelectTrigger></FormControl>
-                <SelectContent>
-                  <SelectItem value="1">Residencial das Flores</SelectItem>
-                  <SelectItem value="2">Condomínio Vista Verde</SelectItem>
-                  <SelectItem value="3">Edifício Central</SelectItem>
-                </SelectContent>
-              </Select><FormMessage />
-            </FormItem>
-          )} />
+        <form onSubmit={form.handleSubmit(onSave)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-6">
+          <FormField
+            control={form.control}
+            name="condominioId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Condomínio</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingCondominios}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder={loadingCondominios ? "Carregando condomínios..." : "Selecione o condomínio"} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {condominioOptions.map((condo) => (
+                      <SelectItem key={condo.value} value={condo.value}>
+                        {condo.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField control={form.control} name="nome" render={({ field }) => ( <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input placeholder="Nome do morador" {...field} /></FormControl><FormMessage /></FormItem> )} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField control={form.control} name="bloco" render={({ field }) => ( <FormItem><FormLabel>Bloco</FormLabel><FormControl><Input placeholder="Ex: A" {...field} /></FormControl><FormMessage /></FormItem> )} />
@@ -39,7 +71,8 @@ export const MoradorForm = ({ onSave }: Props) => {
           </div>
           <FormField control={form.control} name="email" render={({ field }) => ( <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="email@example.com" {...field} /></FormControl><FormMessage /></FormItem> )} />
           <FormField control={form.control} name="telefone" render={({ field }) => ( <FormItem><FormLabel>Telefone</FormLabel><FormControl><IMaskInput mask="(00) 00000-0000" placeholder="(11) 98765-4321" {...field} onAccept={field.onChange} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" /></FormControl><FormMessage /></FormItem> )} />
-          <DialogFooter className="pt-4">
+          
+          <DialogFooter className="pt-4 sticky bottom-0 bg-background">
             <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
             <Button type="submit" className="bg-gold hover:bg-gold-hover">Salvar Morador</Button>
           </DialogFooter>
