@@ -8,7 +8,8 @@ export class CobrancaRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   create(createCobrancaDto: CreateCobrancaDto) {
-    return this.prisma.cobranca.create({ data: createCobrancaDto });
+    const { valor, ...rest } = createCobrancaDto;
+    return this.prisma.cobranca.create({ data: { ...rest, valor: valor! } });
   }
 
   findAll() {

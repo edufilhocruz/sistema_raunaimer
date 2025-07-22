@@ -52,6 +52,20 @@ export const ModeloEditor = ({ modelo, onSave, onDelete, isSaving }: Props) => {
     return { __html: previewText };
   };
 
+  /**
+   * Gera um preview realista substituindo as variáveis por exemplos fictícios.
+   */
+  const gerarPreviewDinamico = (texto: string) => {
+    return texto
+      .replace(/{{nome_morador}}/gi, 'João da Silva')
+      .replace(/{{nome_condominio}}/gi, 'Residencial Jardim das Acácias')
+      .replace(/{{endereco_condominio}}/gi, 'Rua das Flores, 123, Centro, Cidade - UF')
+      .replace(/{{bloco}}/gi, 'A')
+      .replace(/{{apartamento}}/gi, '101')
+      .replace(/{{valor}}/gi, 'R$ 1.234,56')
+      .replace(/{{mes_referencia}}/gi, '07/2025');
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSave)} className="space-y-6">
@@ -80,10 +94,8 @@ export const ModeloEditor = ({ modelo, onSave, onDelete, isSaving }: Props) => {
           <div className="bg-muted/50 p-6 rounded-lg border">
             <h3 className="font-semibold mb-4 text-foreground">Pré-visualização Dinâmica</h3>
             <div className="space-y-2 text-sm text-muted-foreground whitespace-pre-wrap">
-              <p><span className="font-semibold text-foreground">Assunto: {tituloValue}</span></p>
-              <p>Prezado(a) {'{{nome_morador}}'},</p>
-              <div dangerouslySetInnerHTML={renderPreview()} />
-              <p>Atenciosamente,<br/>Administração do {'{{nome_condominio}}'}.</p>
+              <p><span className="font-semibold text-foreground">Assunto: {gerarPreviewDinamico(tituloValue)}</span></p>
+              <div>{gerarPreviewDinamico(conteudoValue || '')}</div>
             </div>
           </div>
         </div>

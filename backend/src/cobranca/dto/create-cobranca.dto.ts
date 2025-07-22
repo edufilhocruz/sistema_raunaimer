@@ -1,11 +1,11 @@
-import { IsDateString, IsNotEmpty, IsNumber, IsPositive, IsUUID } from 'class-validator';
+import { IsDateString, IsNotEmpty, IsNumber, IsPositive, IsUUID, IsOptional } from 'class-validator';
 import { StatusEnvio } from '@prisma/client';
 
 export class CreateCobrancaDto {
+  @IsOptional()
   @IsNumber()
   @IsPositive({ message: 'O valor da cobrança deve ser um número positivo.' })
-  @IsNotEmpty({ message: 'O valor é obrigatório.' })
-  valor: number;
+  valor?: number;
 
   @IsDateString({}, { message: 'A data de vencimento deve estar no formato ISO 8601 (YYYY-MM-DD).' })
   @IsNotEmpty({ message: 'A data de vencimento é obrigatória.' })

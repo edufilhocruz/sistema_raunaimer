@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { CheckCircle2 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
 import { useCondominios } from '@/features/condominio/hooks/useCondominios';
@@ -20,6 +21,7 @@ const CondominiosPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCondominio, setSelectedCondominio] = useState<CondominioFormData | null>(null);
     const [editId, setEditId] = useState<string | null>(null);
+    const [salvoOpen, setSalvoOpen] = useState(false);
 
     const filteredCondominios = useMemo(() => {
         if (!searchTerm) return condominios;
@@ -39,6 +41,8 @@ const CondominiosPage = () => {
                 await condominioService.createCondominio(data);
                 toast({ title: "Sucesso!", description: `O condomínio "${data.nome}" foi criado.` });
             }
+            setSalvoOpen(true);
+            setTimeout(() => setSalvoOpen(false), 2000);
             setIsFormOpen(false);
             setEditId(null);
             setSelectedCondominio(null);
@@ -102,6 +106,14 @@ const CondominiosPage = () => {
                         defaultValues={selectedCondominio || undefined}
                     />
                 </DialogContent>
+            </Dialog>
+            <Dialog open={salvoOpen} onOpenChange={setSalvoOpen}>
+              <DialogContent className="max-w-xs">
+                <div className="flex flex-col items-center gap-4 p-6">
+                  <CheckCircle2 className="h-14 w-14 text-green-600" />
+                  <span className="text-green-700 text-xl font-bold">Condomínio salvo!</span>
+                </div>
+              </DialogContent>
             </Dialog>
         </>
     );

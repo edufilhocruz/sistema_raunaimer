@@ -20,9 +20,13 @@ export class CondominioRepository {
   }
 
   update(id: string, updateCondominioDto: UpdateCondominioDto) {
+    // Remove campos undefined para não sobrescrever dados existentes
+    const data = Object.fromEntries(
+      Object.entries(updateCondominioDto).filter(([_, v]) => v !== undefined)
+    );
     return this.prisma.condominio.update({
       where: { id },
-      data: updateCondominioDto,
+      data,
     });
   }
 

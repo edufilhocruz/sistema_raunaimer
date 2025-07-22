@@ -8,40 +8,41 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useEmailConfig } from '../hooks/useEmailConfig';
+import configuracaoService from '../services/configuracaoService';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from "@/components/ui/use-toast";
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 export const EmailTab = () => {
-  const { config, loading } = useEmailConfig();
+  const { config, loading, refresh } = useEmailConfig();
   const [isTestOpen, setIsTestOpen] = useState(false);
   const [testEmail, setTestEmail] = useState('');
   const [isTesting, setIsTesting] = useState(false);
   
   const form = useForm<EmailFormData>({
     resolver: zodResolver(emailFormSchema),
-    values: config,
+    values: { tipoEnvio: 'SMTP', ...config },
   });
 
   useEffect(() => {
     if (Object.keys(config).length > 0) form.reset(config);
   }, [config, form]);
 
-  const onSubmit = (data: EmailFormData) => {
-    console.log("Salvando configurações de e-mail:", data);
-    toast({ title: "Sucesso!", description: "As configurações de e-mail foram salvas." });
+  const onSubmit = async (data: EmailFormData) => {
+    try {
+      await configuracaoService.saveEmailConfig(data);
+      toast({ title: "Sucesso!", description: "As configurações de e-mail foram salvas." });
+      refresh();
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível salvar as configurações.' });
+    }
   };
 
   const handleTestSend = async () => {
     setIsTesting(true);
     try {
-      // Chame o endpoint de teste de envio
-      await fetch('/api/email-config/test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: testEmail, subject: 'Teste de E-mail', text: 'Este é um teste de envio.' })
-      });
+      await configuracaoService.testEmail(testEmail);
       toast({ title: 'E-mail de teste enviado com sucesso!' });
       setIsTestOpen(false);
       setTestEmail('');

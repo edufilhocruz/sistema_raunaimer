@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEmail, Length, IsUUID } from 'class-validator';
+import { IsString, IsNotEmpty, IsEmail, Length, IsUUID, IsOptional, IsNumber } from 'class-validator';
 
 export class CreateMoradorDto {
   @IsString()
@@ -25,4 +25,8 @@ export class CreateMoradorDto {
   @IsUUID('4', { message: 'O ID do condomínio deve ser um UUID válido.' })
   @IsNotEmpty({ message: 'O condomínio é obrigatório.' })
   condominioId: string;
+
+  @IsOptional()
+  @IsNumber()
+  valorAluguel?: number;
 }

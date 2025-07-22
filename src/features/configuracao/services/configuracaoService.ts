@@ -1,4 +1,5 @@
 import { Usuario, LogEntry, EmailFormData, SegurancaFormData } from '../types';
+import apiClient from '@/services/apiClient';
 
 //================================== MOCK DATA ==================================
 // Dados simulados para usuários. Em um ambiente real, viriam do banco de dados.
@@ -43,17 +44,46 @@ const configuracaoService = {
    * @returns Uma promessa que resolve para um objeto com as configurações de e-mail.
    */
   getEmailConfig: async (): Promise<Partial<EmailFormData>> => {
-    console.log('SERVICE: Buscando configurações de e-mail...');
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const { data } = await apiClient.get('/email-config');
+    // Buscar assinatura do localStorage
+    const assinatura = localStorage.getItem('assinaturaPadrao') || '';
+    // Extrair apenas o nome do remetente
+    let nomeRemetente = 'Raunaimer Jurídico';
+    if (data.from) {
+      const match = data.from.match(/^(.*?)</);
+      nomeRemetente = match ? match[1].trim() : data.from;
+    }
     return {
       tipoEnvio: 'SMTP',
-      servidorSmtp: 'smtp.example.com',
-      porta: 587,
-      emailRemetente: 'contato@raunaimer.com',
-      nomeRemetente: 'Sistema Raunaimer',
-      senhaRemetente: 'super_secret_password', // Em um app real, isso não seria enviado para o front-end
-      assinatura: 'Atenciosamente,\nEquipe Raunaimer.',
+      servidorSmtp: data.host,
+      porta: data.port,
+      emailRemetente: data.user,
+      senhaRemetente: data.pass,
+      nomeRemetente,
+      assinatura,
     };
+  },
+
+  saveEmailConfig: async (form: EmailFormData): Promise<void> => {
+    const payload = {
+      host: form.servidorSmtp,
+      port: form.porta,
+      user: form.emailRemetente,
+      pass: form.senhaRemetente,
+      from: `${form.nomeRemetente} <${form.emailRemetente}>`,
+      secure: form.porta === 465,
+    };
+    await apiClient.post('/email-config', payload);
+    // Salvar assinatura no localStorage
+    localStorage.setItem('assinaturaPadrao', form.assinatura);
+  },
+
+  testEmail: async (to: string): Promise<void> => {
+    await apiClient.post('/email-config/test', {
+      to,
+      subject: 'Teste de E-mail',
+      text: 'Este é um teste de envio.'
+    });
   },
 
   /**
@@ -63,11 +93,18 @@ const configuracaoService = {
    * @returns Uma promessa que resolve para um objeto contendo os logs da página e o total de registros.
    */
   getLogs: async ({ page, limit }: { page: number; limit: number }): Promise<{ logs: LogEntry[], total: number }> => {
-    console.log(`SERVICE: Buscando logs - Página ${page}, Limite ${limit}...`);
-    await new Promise(resolve => setTimeout(resolve, 700));
-    const start = (page - 1) * limit;
-    const end = start + limit;
-    return { logs: mockLogs.slice(start, end), total: mockLogs.length };
+    const { data } = await apiClient.get('/logs', { params: { page, limit } });
+    // Mapear campos do backend para o frontend
+    return {
+      logs: data.logs.map((log: any) => ({
+        id: log.id,
+        dataHora: new Date(log.createdAt),
+        usuario: log.usuario,
+        acao: log.acao,
+        ip: log.ip,
+      })),
+      total: data.total,
+    };
   },
 
   /**

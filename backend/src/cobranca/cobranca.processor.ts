@@ -2,6 +2,8 @@ import { Processor, Process } from '@nestjs/bull';
 import { Job } from 'bull';
 import * as XLSX from 'xlsx';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailConfigService } from '../email-config.service';
+import { ModeloCartaService } from '../modelo-carta/modelo-carta.service';
 
 /**
  * Interface para definir a estrutura de dados do trabalho (job) que a fila recebe.
@@ -22,7 +24,11 @@ interface ImportJobData {
  */
 @Processor('import-cobranca')
 export class CobrancaProcessor {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailConfigService: EmailConfigService,
+    private readonly modeloCartaService: ModeloCartaService,
+  ) {}
 
   /**
    * Processa um trabalho de importação de arquivo.
@@ -73,7 +79,7 @@ export class CobrancaProcessor {
           });
 
           // Cria a cobrança associada ao morador
-          await this.prisma.cobranca.create({
+          const cobranca = await this.prisma.cobranca.create({
             data: {
               valor: Number(row.valor),
               vencimento: new Date(), // Vencimento placeholder, pode ser adicionado à planilha
@@ -82,6 +88,30 @@ export class CobrancaProcessor {
               moradorId: morador.id,
               modeloCartaId: modeloCartaId, // ID Dinâmico
             },
+          });
+
+          // Buscar modelo de carta e condomínio para textos dinâmicos
+          const modeloCarta = await this.modeloCartaService.findOne(modeloCartaId);
+          const condominio = await this.prisma.condominio.findUnique({ where: { id: condominioId } });
+          const mesReferencia = (() => {
+            const hoje = new Date();
+            return `${String(hoje.getMonth() + 1).padStart(2, '0')}/${hoje.getFullYear()}`;
+          })();
+          const enderecoCondominio = condominio ? `${condominio.logradouro || ''}, ${condominio.numero || ''}, ${condominio.bairro || ''}, ${condominio.cidade || ''} - ${condominio.estado || ''}`.replace(/(, )+/g, ', ').replace(/^, |, $/g, '') : '';
+          let conteudo = modeloCarta.conteudo
+            .replace(/{{nome_morador}}/gi, morador.nome)
+            .replace(/{{nome_condominio}}/gi, condominio?.nome || '')
+            .replace(/{{endereco_condominio}}/gi, enderecoCondominio)
+            .replace(/{{bloco}}/gi, morador.bloco)
+            .replace(/{{apartamento}}/gi, morador.apartamento)
+            .replace(/{{valor}}/gi, cobranca.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }))
+            .replace(/{{mes_referencia}}/gi, mesReferencia);
+
+          // Envia o e-mail de cobrança usando a configuração centralizada
+          await this.emailConfigService.sendMail({
+            to: row.email,
+            subject: `Cobrança - ${condominio?.nome || ''}`,
+            text: conteudo,
           });
           sucesso++;
         } catch (error) {

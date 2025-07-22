@@ -14,6 +14,9 @@ import { UsuarioController } from './usuario.controller';
 import { PermissaoService } from './permissao.service';
 import { PermissaoController } from './permissao.controller';
 import { StatusEnvio } from '@prisma/client';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { LogAuditoriaService } from './log-auditoria.service';
+import { LogAuditoriaController } from './log-auditoria.controller';
 
 @Module({
   imports: [
@@ -27,8 +30,9 @@ import { StatusEnvio } from '@prisma/client';
     MoradorModule,
     CobrancaModule,
     ModeloCartaModule,
+    DashboardModule,
   ],
-  controllers: [AppController, EmailConfigController, UsuarioController, PermissaoController],
-  providers: [AppService, EmailConfigService, PrismaService, UsuarioService, PermissaoService],
+  controllers: [AppController, EmailConfigController, UsuarioController, PermissaoController, LogAuditoriaController],
+  providers: [AppService, EmailConfigService, PrismaService, UsuarioService, PermissaoService, LogAuditoriaService],
 })
 export class AppModule {}

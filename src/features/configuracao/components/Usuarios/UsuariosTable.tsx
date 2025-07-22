@@ -5,7 +5,13 @@ import { Button } from '@/components/ui/button';
 import { MoreHorizontal } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-export const UsuariosTable = ({ users }: { users: Usuario[] }) => (
+interface Props {
+  users: Usuario[];
+  onEdit?: (user: Usuario) => void;
+  onDelete?: (user: Usuario) => void;
+}
+
+export const UsuariosTable = ({ users, onEdit, onDelete }: Props) => (
   <Table>
     <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Email</TableHead><TableHead>Acesso</TableHead><TableHead>Status</TableHead><TableHead className="w-[50px]">Ações</TableHead></TableRow></TableHeader>
     <TableBody>
@@ -19,8 +25,8 @@ export const UsuariosTable = ({ users }: { users: Usuario[] }) => (
             <DropdownMenu>
                 <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Editar</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">Desativar</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onEdit && onEdit(user)}>Editar</DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive" onClick={() => onDelete && onDelete(user)}>Desativar</DropdownMenuItem>
                 </DropdownMenuContent>
              </DropdownMenu>
           </TableCell>

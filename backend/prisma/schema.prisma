@@ -39,10 +39,8 @@ model Morador {
   condominio      Condominio  @relation(fields: [condominioId], references: [id])
   condominioId    String
   cobrancas       Cobranca[]
-  
-  // NOVO CAMPO ADICIONADO AQUI
   statusPagamento StatusPagamento @default(PENDENTE)
-
+  valorAluguel    Float?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 }
@@ -111,6 +109,7 @@ model Usuario {
   nome       String
   email      String   @unique
   senha      String
+  role       String
   permissoes PermissaoUsuario[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -128,4 +127,12 @@ model PermissaoUsuario {
   usuarioId    String
   permissao    Permissao @relation(fields: [permissaoId], references: [id])
   permissaoId  String
+}
+
+model LogAuditoria {
+  id         String   @id @default(uuid())
+  usuario    String
+  acao       String
+  ip         String
+  createdAt  DateTime @default(now())
 }

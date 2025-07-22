@@ -41,7 +41,6 @@ export const enviarCobrancaSchema = z.object({
   condominioId: z.string({ required_error: "Selecione um condomínio." }),
   moradorId: z.string({ required_error: "Selecione um morador." }),
   modeloId: z.string({ required_error: "Selecione um modelo de carta." }),
-  valorAluguel: z.string().min(1, { message: "O valor do aluguel é obrigatório." }),
 });
 
 export type EnviarCobrancaFormData = z.infer<typeof enviarCobrancaSchema>;

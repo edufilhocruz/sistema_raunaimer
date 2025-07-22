@@ -15,10 +15,11 @@ export class UsuarioService {
 
   async create(data: any) {
     // data.permissoes: array de permissaoId
-    const { permissoes, ...rest } = data;
+    const { permissoes, password, ...rest } = data;
     const usuario = await this.prisma.usuario.create({
       data: {
         ...rest,
+        senha: password, // mapeia para o campo correto do banco
         permissoes: {
           create: (permissoes || []).map((permissaoId: string) => ({ permissaoId }))
         }

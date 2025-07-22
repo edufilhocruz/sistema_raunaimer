@@ -4,12 +4,14 @@ import { UpdateCobrancaDto } from './dto/update-cobranca.dto';
 import { CobrancaRepository } from './cobranca.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { StatusEnvio } from '@prisma/client';
+import { EmailConfigService } from '../email-config.service';
 
 @Injectable()
 export class CobrancaService {
   constructor(
     private readonly repository: CobrancaRepository,
     private readonly prisma: PrismaService,
+    private readonly emailConfigService: EmailConfigService,
   ) {}
 
   async create(createCobrancaDto: CreateCobrancaDto) {
@@ -26,7 +28,34 @@ export class CobrancaService {
     if (!condominio) throw new NotFoundException(`Condomínio com ID ${condominioId} não encontrado.`);
     if (!modeloCarta) throw new NotFoundException(`Modelo de Carta com ID ${modeloCartaId} não encontrado.`);
 
-    return this.repository.create({ ...createCobrancaDto, statusEnvio: StatusEnvio.ENVIADO });
+    // Se não vier valor, usa o valor do aluguel do morador
+    let valor = createCobrancaDto.valor;
+    if (valor === undefined || valor === null) {
+      if (morador.valorAluguel === undefined || morador.valorAluguel === null) {
+        throw new NotFoundException('O valor do aluguel do morador não está cadastrado.');
+      }
+      valor = morador.valorAluguel;
+    }
+
+    const cobranca = await this.repository.create({ ...createCobrancaDto, valor, statusEnvio: StatusEnvio.ENVIADO });
+
+    // Substitui os placeholders do modelo de carta
+    const mesReferencia = (() => {
+      const hoje = new Date();
+      return `${String(hoje.getMonth() + 1).padStart(2, '0')}/${hoje.getFullYear()}`;
+    })();
+    let conteudo = modeloCarta.conteudo
+      .replace(/{{nome_morador}}/gi, morador.nome)
+      .replace(/{{valor}}/gi, cobranca.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }))
+      .replace(/{{mes_referencia}}/gi, mesReferencia);
+
+    await this.emailConfigService.sendMail({
+      to: morador.email,
+      subject: `Cobrança - ${condominio.nome}`,
+      text: conteudo,
+    });
+
+    return cobranca;
   }
 
   findAll() {

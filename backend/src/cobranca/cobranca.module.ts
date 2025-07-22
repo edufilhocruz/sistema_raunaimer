@@ -5,6 +5,8 @@ import { CobrancaController } from './cobranca.controller';
 import { CobrancaRepository } from './cobranca.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { CobrancaProcessor } from './cobranca.processor';
+import { EmailConfigService } from '../email-config.service';
+import { ModeloCartaService } from '../modelo-carta/modelo-carta.service';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { CobrancaProcessor } from './cobranca.processor';
     CobrancaRepository,
     PrismaService,
     CobrancaProcessor, // Adiciona o worker como um provider para que o NestJS o gerencie
+    EmailConfigService,
+    ModeloCartaService,
   ],
 })
 export class CobrancaModule {}

@@ -22,7 +22,7 @@ export const DashboardPage = () => {
   const { data, loading, error } = useDashboardData(selectedCondominioId, dateRange);
 
   // A lista de condomínios para o dropdown de filtros é sempre a lista completa.
-  const allCondominios = MOCK_DASHBOARD_DATA.condominiumStatus || [];
+  const allCondominios = (data?.condominios || []).map(c => ({ id: c.id, name: c.nome }));
 
   if (error) {
     return (
@@ -71,7 +71,7 @@ export const DashboardPage = () => {
                 <CondominiumStatusList data={data?.condominiumStatus || []} loading={loading} />
              </ErrorBoundary>
              <ErrorBoundary>
-               <RecentChargesTable />
+               <RecentChargesTable recentCharges={data?.recentCharges || []} />
              </ErrorBoundary>
           </section>
         </div>

@@ -45,6 +45,9 @@ const cobrancaService = {
     const response = await apiClient.get('/cobranca/historico', { params: { moradorId } });
     return response.data;
   },
+  deleteCobranca: async (id: string) => {
+    await apiClient.delete(`/cobranca/${id}`);
+  },
 };
 
 export default cobrancaService;

@@ -75,7 +75,11 @@ const MoradoresPage = () => {
             refresh();
         } catch (err) {
             console.error('Erro ao salvar morador:', err);
-            toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível salvar o morador.' });
+            let description = 'Não foi possível salvar o morador.';
+            if (err?.response?.data?.message) {
+                description = err.response.data.message;
+            }
+            toast({ variant: 'destructive', title: 'Erro', description });
         }
     };
 
@@ -89,7 +93,6 @@ const MoradoresPage = () => {
     };
 
     const handleDelete = async (morador: any) => {
-        if (!window.confirm(`Tem certeza que deseja excluir o morador "${morador.nome}"?`)) return;
         try {
             await moradorService.deleteMorador(morador.id);
             toast({ title: 'Morador excluído com sucesso!' });

@@ -28,10 +28,9 @@ export const EnviarCobrancaForm = () => {
   async function onSubmit(data: EnviarCobrancaFormData) {
     setStatusEnvio('loading');
     try {
-      // Monta o payload conforme esperado pelo backend
+      // Monta o payload conforme esperado pelo backend (sem valorAluguel)
       const payload = {
-        valor: Number(data.valorAluguel.replace(/\./g, '').replace(',', '.')),
-        vencimento: new Date().toISOString(), // Substitua pelo campo correto se houver
+        vencimento: new Date().toISOString(),
         status: 'PENDENTE',
         condominioId: data.condominioId,
         moradorId: data.moradorId,
@@ -108,27 +107,6 @@ export const EnviarCobrancaForm = () => {
                     <FormControl><SelectTrigger><SelectValue placeholder={loadingModelos ? "Carregando..." : "Escolha um modelo..."} /></SelectTrigger></FormControl>
                     <SelectContent>{modelos.map(m => <SelectItem key={m.id} value={m.id}>{m.titulo}</SelectItem>)}</SelectContent>
                   </Select><FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="valorAluguel" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>4. Valor do Aluguel</FormLabel>
-                  <FormControl>
-                    <IMaskInput
-                      mask={Number}
-                      radix="," // pt-BR
-                      thousandsSeparator="."
-                      scale={2}
-                      padFractionalZeros={true}
-                      normalizeZeros={true}
-                      value={field.value !== undefined ? String(field.value) : ''}
-                      onAccept={field.onChange}
-                      placeholder="0,00"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    />
-                  </FormControl>
-                  <FormMessage />
                 </FormItem>
               )} />
 

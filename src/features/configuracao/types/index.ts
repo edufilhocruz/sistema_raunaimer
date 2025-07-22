@@ -29,7 +29,7 @@ export const emailFormSchema = z.object({
   emailRemetente: z.string().email('Email do remetente inválido.'),
   senhaRemetente: z.string().min(1, 'Senha é obrigatória.'),
   nomeRemetente: z.string().min(1, 'Nome do remetente é obrigatório.'),
-  assinatura: z.string().optional(),
+  assinatura: z.string().min(1, 'Assinatura padrão é obrigatória.'),
 });
 export type EmailFormData = z.infer<typeof emailFormSchema>;
 
