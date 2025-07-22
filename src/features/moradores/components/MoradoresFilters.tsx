@@ -1,32 +1,88 @@
-import { DateRange } from "react-day-picker";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCondominios } from '@/features/condominio/hooks/useCondominios';
+import { useModelos } from '@/features/modelos/hooks/useModelos';
+import { useState } from 'react';
 
-interface Props {
-  dateRange?: DateRange;
-  onDateChange: (dateRange?: DateRange) => void;
+interface MoradoresFiltersProps {
+  onFilter: (filters: {
+    statusPagamento?: string;
+    tipoCobranca?: string;
+    condominioId?: string;
+    statusEnvio?: string;
+  }) => void;
+  onClear?: () => void;
 }
 
-export const MoradoresFilters = ({ dateRange, onDateChange }: Props) => {
+export const MoradoresFilters = ({ onFilter, onClear }: MoradoresFiltersProps) => {
+  const { condominioOptions, loading } = useCondominios();
+  const { modelos, loading: loadingModelos } = useModelos();
+  const [statusPagamento, setStatusPagamento] = useState<string>('all');
+  const [tipoCobranca, setTipoCobranca] = useState<string>('all');
+  const [condominioId, setCondominioId] = useState<string>('all');
+  const [statusEnvio, setStatusEnvio] = useState<string>('all');
+
+  const handleFilter = () => {
+    onFilter({
+      statusPagamento: statusPagamento === 'all' ? undefined : statusPagamento,
+      tipoCobranca: tipoCobranca === 'all' ? undefined : tipoCobranca,
+      condominioId: condominioId === 'all' ? undefined : condominioId,
+      statusEnvio: statusEnvio === 'all' ? undefined : statusEnvio,
+    });
+  };
+
   return (
-    <div className="flex items-center gap-4">
-        <Popover>
-            <PopoverTrigger asChild>
-                <Button variant={"outline"} className={cn("w-[280px] h-10 justify-start text-left font-normal", !dateRange && "text-muted-foreground")}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateRange?.from ? ( dateRange.to ? ( <> {format(dateRange.from, "dd/MM/yy")} - {format(dateRange.to, "dd/MM/yy")} </> ) : ( format(dateRange.from, "dd/MM/yy") ) ) : ( <span>Filtrar por data de envio</span> )}
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-                <Calendar initialFocus mode="range" selected={dateRange} onSelect={onDateChange} numberOfMonths={2} locale={ptBR}/>
-            </PopoverContent>
-        </Popover>
-        <Button variant="outline" onClick={() => onDateChange(undefined)}>Limpar Filtro</Button>
+    <div className="flex flex-wrap gap-4 items-end">
+      <div>
+        <label className="block text-xs font-medium text-muted-foreground mb-1">Status Pagamento</label>
+        <Select value={statusPagamento} onValueChange={setStatusPagamento}>
+          <SelectTrigger className="w-40 h-10"><SelectValue placeholder="Todos" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="EM_DIA">Em Dia</SelectItem>
+            <SelectItem value="ATRASADO">Atrasado</SelectItem>
+            <SelectItem value="PENDENTE">Pendente</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-muted-foreground mb-1">Tipo de Cobrança</label>
+        <Select value={tipoCobranca} onValueChange={setTipoCobranca} disabled={loadingModelos}>
+          <SelectTrigger className="w-40 h-10"><SelectValue placeholder="Todos" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Nada</SelectItem>
+            {modelos.map((modelo) => (
+              <SelectItem key={modelo.id} value={modelo.titulo}>{modelo.titulo}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-muted-foreground mb-1">Condomínio</label>
+        <Select value={condominioId} onValueChange={setCondominioId} disabled={loading}>
+          <SelectTrigger className="w-40 h-10"><SelectValue placeholder="Todos" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            {condominioOptions.map((condo) => (
+              <SelectItem key={condo.value} value={condo.value}>{condo.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-muted-foreground mb-1">Status</label>
+        <Select value={statusEnvio} onValueChange={setStatusEnvio}>
+          <SelectTrigger className="w-40 h-10"><SelectValue placeholder="Todos" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="ENVIADO">Enviado</SelectItem>
+            <SelectItem value="ERRO">Erro</SelectItem>
+            <SelectItem value="NAO_ENVIADO">Não Enviado</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <Button className="h-10" onClick={handleFilter}>Filtrar</Button>
+      <Button variant="outline" className="h-10" onClick={onClear}>Limpar</Button>
     </div>
   );
 };

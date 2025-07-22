@@ -31,7 +31,20 @@ const cobrancaService = {
       },
     });
     return response.data;
-  }
+  },
+  criarCobranca: async (payload: any) => {
+    const response = await apiClient.post('/cobranca', payload);
+    return response.data;
+  },
+  getHistoricoCobrancas: async (condominioId?: string) => {
+    const params = condominioId ? { condominioId } : undefined;
+    const response = await apiClient.get('/cobranca/historico', { params });
+    return response.data;
+  },
+  getHistoricoCobrancasPorMorador: async (moradorId: string) => {
+    const response = await apiClient.get('/cobranca/historico', { params: { moradorId } });
+    return response.data;
+  },
 };
 
 export default cobrancaService;

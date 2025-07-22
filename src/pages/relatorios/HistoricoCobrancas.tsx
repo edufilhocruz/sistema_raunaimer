@@ -8,9 +8,16 @@ import { CobrancasTable } from "@/features/cobranca/components/CobrancasReport/C
 import { useCobrancasReport } from "@/features/cobranca/hooks/useCobrancasReport";
 import { CobrancasReportFilters } from "@/features/cobranca/components/CobrancasReport/CobrancasReportFilters";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useState } from "react";
 
 const HistoricoCobrancasPage = () => {
-    const { data, kpis, loading, error, setFilters } = useCobrancasReport();
+    const [condominioId, setCondominioId] = useState<string | undefined>();
+    const { data, kpis, loading, error, setFilters } = useCobrancasReport(condominioId);
+
+    const handleFilterChange = (filters: any) => {
+        setFilters(filters);
+        setCondominioId(filters.condominioId);
+    };
 
     const renderContent = () => {
         if (loading) {
@@ -35,7 +42,7 @@ const HistoricoCobrancasPage = () => {
                         <CobrancasKpiCards kpis={kpis} loading={loading} />
                     </section>
                     
-                    <CobrancasReportFilters onFilterChange={setFilters} />
+                    <CobrancasReportFilters onFilterChange={handleFilterChange} />
 
                     <Card className="rounded-2xl shadow-sm border">
                         <CardHeader className="flex flex-row items-center justify-between">

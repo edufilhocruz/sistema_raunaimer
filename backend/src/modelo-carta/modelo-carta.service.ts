@@ -7,8 +7,13 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ModeloCartaService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(createModeloCartaDto: CreateModeloCartaDto) {
-    return this.prisma.modeloCarta.create({ data: createModeloCartaDto });
+  async create(createModeloCartaDto: CreateModeloCartaDto) {
+    console.log('DTO recebido:', createModeloCartaDto);
+    const result = await this.prisma.modeloCarta.create({
+      data: createModeloCartaDto,
+    });
+    console.log('Registro salvo:', result);
+    return result;
   }
 
   findAll() {

@@ -7,7 +7,6 @@ import { z } from "zod";
 export interface ModeloCarta {
   id: string;
   titulo: string;
-  descricao: string;
   conteudo?: string; // Conteúdo da mensagem
 }
 

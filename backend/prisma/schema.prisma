@@ -62,6 +62,7 @@ model Cobranca {
   valor           Float
   vencimento      DateTime
   status          StatusCobranca @default(PENDENTE)
+  statusEnvio     StatusEnvio @default(NAO_ENVIADO)
   
   condominio      Condominio  @relation(fields: [condominioId], references: [id])
   condominioId    String
@@ -75,6 +76,18 @@ model Cobranca {
   updatedAt       DateTime    @updatedAt
 }
 
+model EmailConfig {
+  id        String   @id @default(uuid())
+  host      String
+  port      Int
+  user      String
+  pass      String
+  from      String
+  secure    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 enum StatusCobranca {
   PENDENTE
   PAGO
@@ -85,4 +98,34 @@ enum StatusPagamento {
   EM_DIA
   ATRASADO
   PENDENTE
+}
+
+enum StatusEnvio {
+  ENVIADO
+  ERRO
+  NAO_ENVIADO
+}
+
+model Usuario {
+  id         String   @id @default(uuid())
+  nome       String
+  email      String   @unique
+  senha      String
+  permissoes PermissaoUsuario[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Permissao {
+  id        String   @id @default(uuid())
+  nome      String   @unique
+  usuarios  PermissaoUsuario[]
+}
+
+model PermissaoUsuario {
+  id           String   @id @default(uuid())
+  usuario      Usuario  @relation(fields: [usuarioId], references: [id])
+  usuarioId    String
+  permissao    Permissao @relation(fields: [permissaoId], references: [id])
+  permissaoId  String
 }

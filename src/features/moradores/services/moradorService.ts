@@ -11,6 +11,18 @@ const moradorService = {
     const response = await apiClient.get<Morador[]>('/morador');
     return response.data;
   },
+  updateMorador: async (id: string, data: any): Promise<Morador> => {
+    const response = await apiClient.patch<Morador>(`/morador/${id}`, data);
+    return response.data;
+  },
+
+  deleteMorador: async (id: string): Promise<void> => {
+    await apiClient.delete(`/morador/${id}`);
+  },
+  createMorador: async (data: any): Promise<Morador> => {
+    const response = await apiClient.post<Morador>('/morador', data);
+    return response.data;
+  },
   // ... (outras funções do serviço)
 };
 

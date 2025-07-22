@@ -34,4 +34,9 @@ export class MoradorController {
     // CORREÇÃO AQUI: Removido o '+'
     return this.moradorService.remove(id);
   }
+
+  @Post('importar')
+  async importar(@Body() moradores: any[]) {
+    return this.moradorService.importar(moradores);
+  }
 }

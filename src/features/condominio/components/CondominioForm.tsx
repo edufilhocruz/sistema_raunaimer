@@ -16,14 +16,16 @@ interface CondominioFormProps {
   onSave: (data: CondominioFormData) => void;
   onCancel: () => void;
   isSaving?: boolean;
+  defaultValues?: Partial<CondominioFormData>;
 }
 
-export const CondominioForm = ({ onSave, onCancel, isSaving }: CondominioFormProps) => {
+export const CondominioForm = ({ onSave, onCancel, isSaving, defaultValues }: CondominioFormProps) => {
   const form = useForm<CondominioFormData>({
     resolver: zodResolver(condominioFormSchema),
     defaultValues: {
       nome: '', cnpj: '', cep: '', logradouro: '', numero: '',
       complemento: '', bairro: '', cidade: '', estado: '', administradora: '',
+      ...defaultValues,
     },
     mode: 'onBlur',
   });

@@ -8,7 +8,7 @@ interface Filters {
   dateRange?: DateRange;
 }
 
-export const useCobrancasReport = () => {
+export const useCobrancasReport = (condominioId?: string) => {
   const [allData, setAllData] = useState<HistoricoCobranca[]>([]);
   const [filters, setFilters] = useState<Filters>({ status: 'todos' });
   const [loading, setLoading] = useState(true);
@@ -18,7 +18,7 @@ export const useCobrancasReport = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const reportData = await cobrancaService.getHistoricoCobrancas();
+        const reportData = await cobrancaService.getHistoricoCobrancas(condominioId);
         setAllData(reportData);
       } catch (err) {
         setError('Falha ao carregar o histórico de cobranças.');
@@ -27,7 +27,7 @@ export const useCobrancasReport = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [condominioId]);
 
   // Lógica de filtragem corrigida e otimizada
   const filteredData = useMemo(() => {

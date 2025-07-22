@@ -1,15 +1,25 @@
 import { Usuario } from '../types';
-
-const mockUsuarios: Usuario[] = [
-  { id: '1', nome: 'Eduardo Cruz', email: 'admin@raunaimer.com', role: 'Admin', status: 'Ativo' },
-  { id: '2', nome: 'Alice Siqueira', email: 'alice@raunaimer.com', role: 'Operador', status: 'Ativo' },
-  { id: '3', nome: 'Bruno Costa', email: 'bruno@raunaimer.com', role: 'Operador', status: 'Inativo' },
-];
+import apiClient from '@/services/apiClient';
 
 const usuarioService = {
   getUsuarios: async (): Promise<Usuario[]> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return mockUsuarios;
+    const response = await apiClient.get<Usuario[]>('/usuarios');
+    return response.data;
+  },
+  createUsuario: async (data: any): Promise<Usuario> => {
+    const response = await apiClient.post<Usuario>('/usuarios', data);
+    return response.data;
+  },
+  updateUsuario: async (id: string, data: any): Promise<Usuario> => {
+    const response = await apiClient.patch<Usuario>(`/usuarios/${id}`, data);
+    return response.data;
+  },
+  deleteUsuario: async (id: string): Promise<void> => {
+    await apiClient.delete(`/usuarios/${id}`);
+  },
+  getPermissoes: async (): Promise<any[]> => {
+    const response = await apiClient.get<any[]>('/permissoes');
+    return response.data;
   },
 };
 

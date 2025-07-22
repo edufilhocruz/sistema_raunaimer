@@ -9,6 +9,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { InjectQueue } from '@nestjs/bull';
@@ -71,8 +72,11 @@ export class CobrancaController {
    * @param createCobrancaDto Os dados da nova cobrança.
    */
   @Post()
-  create(@Body() createCobrancaDto: CreateCobrancaDto) {
-    return this.cobrancaService.create(createCobrancaDto);
+  async create(@Body() createCobrancaDto: CreateCobrancaDto) {
+    console.log('Recebido para criar cobrança:', createCobrancaDto);
+    const result = await this.cobrancaService.create(createCobrancaDto);
+    console.log('Resultado da criação de cobrança:', result);
+    return result;
   }
 
   /**
@@ -81,6 +85,22 @@ export class CobrancaController {
   @Get()
   findAll() {
     return this.cobrancaService.findAll();
+  }
+
+  /**
+   * Retorna o relatório de inadimplência (cobranças em atraso).
+   */
+  @Get('inadimplencia')
+  async getInadimplencia(@Query('condominioId') condominioId?: string) {
+    return this.cobrancaService.getInadimplencia(condominioId);
+  }
+
+  /**
+   * Retorna o histórico de cobranças, com filtro opcional por condomínio e morador.
+   */
+  @Get('historico')
+  async getHistorico(@Query('condominioId') condominioId?: string, @Query('moradorId') moradorId?: string) {
+    return this.cobrancaService.getHistoricoCobrancas(condominioId, moradorId);
   }
 
   /**

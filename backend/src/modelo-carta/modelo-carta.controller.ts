@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { ModeloCartaService } from './modelo-carta.service';
 import { CreateModeloCartaDto } from './dto/create-modelo-carta.dto';
 import { UpdateModeloCartaDto } from './dto/update-modelo-carta.dto';
@@ -8,10 +16,14 @@ export class ModeloCartaController {
   constructor(private readonly modeloCartaService: ModeloCartaService) {}
 
   @Post()
-  create(@Body() createModeloCartaDto: CreateModeloCartaDto) { /* ... */ }
+  create(@Body() createModeloCartaDto: CreateModeloCartaDto) {
+    return this.modeloCartaService.create(createModeloCartaDto);
+  }
 
   @Get()
-  findAll() { /* ... */ }
+  findAll() {
+    return this.modeloCartaService.findAll();
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -19,7 +31,10 @@ export class ModeloCartaController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateModeloCartaDto: UpdateModeloCartaDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateModeloCartaDto: UpdateModeloCartaDto,
+  ) {
     return this.modeloCartaService.update(id, updateModeloCartaDto);
   }
 

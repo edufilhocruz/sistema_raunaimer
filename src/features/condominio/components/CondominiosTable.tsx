@@ -6,9 +6,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 interface Props {
   condominios: Condominio[];
+  onEdit: (condo: Condominio) => void;
+  onDelete: (condo: Condominio) => void;
 }
 
-export const CondominiosTable = ({ condominios }: Props) => (
+export const CondominiosTable = ({ condominios, onEdit, onDelete }: Props) => (
   <Table>
     <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>CNPJ</TableHead><TableHead>Cidade/UF</TableHead><TableHead className="w-[50px]">Ações</TableHead></TableRow></TableHeader>
     <TableBody>
@@ -21,8 +23,8 @@ export const CondominiosTable = ({ condominios }: Props) => (
              <DropdownMenu>
                 <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Editar</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">Excluir</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onEdit(condo)}>Editar</DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive" onClick={() => onDelete(condo)}>Excluir</DropdownMenuItem>
                 </DropdownMenuContent>
              </DropdownMenu>
           </TableCell>

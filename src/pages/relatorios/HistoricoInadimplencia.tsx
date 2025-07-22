@@ -7,9 +7,11 @@ import { InadimplenciaFilters } from "@/features/inadimplencia/components/Inadim
 import { InadimplenciaKpiCards } from "@/features/inadimplencia/components/InadimplenciaKpiCards";
 import { InadimplenciaTable } from "@/features/inadimplencia/components/InadimplenciaTable";
 import { useInadimplenciaReport } from "@/features/inadimplencia/hooks/useInadimplenciaReport";
+import { useState } from "react";
 
 const HistoricoInadimplenciaPage = () => {
-  const { data, kpis, loading, error } = useInadimplenciaReport();
+  const [condominioId, setCondominioId] = useState<string | undefined>();
+  const { data, kpis, loading, error } = useInadimplenciaReport(condominioId);
 
   const renderContent = () => {
     if (error) {
@@ -42,7 +44,7 @@ const HistoricoInadimplenciaPage = () => {
             <InadimplenciaKpiCards kpis={kpis} loading={loading} />
           </section>
           
-          <InadimplenciaFilters />
+          <InadimplenciaFilters onFilter={setCondominioId} />
 
           {renderContent()}
         </div>

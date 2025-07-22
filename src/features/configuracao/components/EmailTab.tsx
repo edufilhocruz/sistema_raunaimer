@@ -10,9 +10,14 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useEmailConfig } from '../hooks/useEmailConfig';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from "@/components/ui/use-toast";
+import { useState } from 'react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 export const EmailTab = () => {
   const { config, loading } = useEmailConfig();
+  const [isTestOpen, setIsTestOpen] = useState(false);
+  const [testEmail, setTestEmail] = useState('');
+  const [isTesting, setIsTesting] = useState(false);
   
   const form = useForm<EmailFormData>({
     resolver: zodResolver(emailFormSchema),
@@ -26,6 +31,25 @@ export const EmailTab = () => {
   const onSubmit = (data: EmailFormData) => {
     console.log("Salvando configurações de e-mail:", data);
     toast({ title: "Sucesso!", description: "As configurações de e-mail foram salvas." });
+  };
+
+  const handleTestSend = async () => {
+    setIsTesting(true);
+    try {
+      // Chame o endpoint de teste de envio
+      await fetch('/api/email-config/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: testEmail, subject: 'Teste de E-mail', text: 'Este é um teste de envio.' })
+      });
+      toast({ title: 'E-mail de teste enviado com sucesso!' });
+      setIsTestOpen(false);
+      setTestEmail('');
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível enviar o e-mail de teste.' });
+    } finally {
+      setIsTesting(false);
+    }
   };
 
   if (loading) return <Skeleton className="h-[500px] w-full" />;
@@ -57,11 +81,21 @@ export const EmailTab = () => {
           <FormField control={form.control} name="senhaRemetente" render={({ field }) => ( <FormItem><FormLabel>Senha do Remetente</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormDescription>Sua senha é armazenada de forma segura.</FormDescription><FormMessage /></FormItem> )} />
           <FormField control={form.control} name="assinatura" render={({ field }) => ( <FormItem><FormLabel>Assinatura Padrão</FormLabel><FormControl><Textarea {...field} className="h-24" /></FormControl><FormMessage /></FormItem> )} />
           <div className="flex justify-end gap-4 pt-4">
-            <Button type="button" variant="outline">Testar Envio</Button>
+            <Button type="button" variant="outline" onClick={() => setIsTestOpen(true)}>Testar Envio</Button>
             <Button type="submit" className="bg-gold hover:bg-gold-hover">Salvar Alterações</Button>
           </div>
         </form>
       </Form>
+      <Dialog open={isTestOpen} onOpenChange={setIsTestOpen}>
+        <DialogContent className="max-w-md">
+          <h4 className="text-lg font-bold mb-2">Testar Envio de E-mail</h4>
+          <Input type="email" placeholder="Digite o e-mail para teste" value={testEmail} onChange={e => setTestEmail(e.target.value)} />
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setIsTestOpen(false)}>Cancelar</Button>
+            <Button onClick={handleTestSend} disabled={isTesting || !testEmail} className="bg-gold hover:bg-gold-hover">{isTesting ? 'Enviando...' : 'Enviar Teste'}</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

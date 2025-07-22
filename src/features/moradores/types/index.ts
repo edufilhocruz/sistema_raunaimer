@@ -15,9 +15,12 @@ export interface Morador {
   bloco: string;
   apartamento: string;
   telefone: string;
+  valorAluguel: number;
   statusPagamento: StatusPagamento;
   ultimaCobrancaStatus: StatusCobranca;
   ultimaCobrancaData: string | null;
+  ultimaCobrancaTipo?: string | null;
+  ultimaCobrancaStatusEnvio?: string | null;
   condominio: {
     nome: string;
   };
@@ -33,6 +36,7 @@ export const moradorFormSchema = z.object({
   condominioId: z.string({ required_error: "Selecione um condomínio." }),
   bloco: z.string().min(1, { message: "O bloco é obrigatório." }),
   apartamento: z.string().min(1, { message: "O apartamento é obrigatório." }),
+  valorAluguel: z.number().min(0.01, { message: "O valor do aluguel é obrigatório." }),
 });
 
 export type MoradorFormData = z.infer<typeof moradorFormSchema>;

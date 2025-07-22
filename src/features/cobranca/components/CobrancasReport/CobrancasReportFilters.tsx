@@ -10,19 +10,20 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { Calendar as CalendarIcon, Search } from "lucide-react";
+import { useCondominios } from '@/features/condominio/hooks/useCondominios';
 
 interface Props {
-  onFilterChange: (filters: { status: CobrancaStatus | 'todos'; dateRange?: DateRange }) => void;
+  onFilterChange: (filters: { status: CobrancaStatus | 'todos'; dateRange?: DateRange; condominioId?: string }) => void;
 }
 
 export const CobrancasReportFilters = ({ onFilterChange }: Props) => {
-  // O componente agora gerencia seu próprio estado interno
   const [status, setStatus] = useState<CobrancaStatus | 'todos'>('todos');
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const { condominioOptions, loading } = useCondominios();
+  const [condominioId, setCondominioId] = useState<string | undefined>();
 
-  // Ação é disparada apenas no clique do botão
   const handleApplyFilters = () => {
-    onFilterChange({ status, dateRange });
+    onFilterChange({ status, dateRange, condominioId });
   };
 
   return (
@@ -31,7 +32,19 @@ export const CobrancasReportFilters = ({ onFilterChange }: Props) => {
             <CardTitle>Filtros do Relatório</CardTitle>
         </CardHeader>
         <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {/* Filtro de Condomínio */}
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Condomínio</label>
+                  <Select disabled={loading} value={condominioId} onValueChange={setCondominioId}>
+                    <SelectTrigger className="h-12"><SelectValue placeholder="Selecionar Condomínio" /></SelectTrigger>
+                    <SelectContent>
+                      {condominioOptions.map((condo) => (
+                        <SelectItem key={condo.value} value={condo.value}>{condo.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 {/* Filtro de Status */}
                 <div>
                     <label className="block text-sm font-medium text-muted-foreground mb-1">Status de Pagamento</label>
@@ -50,7 +63,7 @@ export const CobrancasReportFilters = ({ onFilterChange }: Props) => {
                     <label className="block text-sm font-medium text-muted-foreground mb-1">Período</label>
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button variant={"outline"} className={cn("w-full h-12 justify-start text-left font-normal", !dateRange && "text-muted-foreground")}>
+                            <Button variant={"outline"} className={cn("w-full h-12 justify-start text-left font-normal", !dateRange && "text-muted-foreground")}> 
                                 <CalendarIcon className="mr-2 h-4 w-4" />
                                 {dateRange?.from ? ( dateRange.to ? ( <> {format(dateRange.from, "dd/MM/yy", { locale: ptBR })} - {format(dateRange.to, "dd/MM/yy", { locale: ptBR })} </> ) : ( format(dateRange.from, "dd/MM/yy", { locale: ptBR }) ) ) : ( <span>Selecione um período</span> )}
                             </Button>

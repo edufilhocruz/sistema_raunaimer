@@ -31,7 +31,17 @@ export class MoradorRepository {
     return this.prisma.morador.findMany({
       include: {
         condominio: {
-          select: { nome: true },
+          select: { id: true, nome: true },
+        },
+        cobrancas: {
+          orderBy: { dataEnvio: 'desc' },
+          take: 1,
+          select: {
+            dataEnvio: true,
+            status: true,
+            statusEnvio: true,
+            modeloCarta: { select: { titulo: true } },
+          },
         },
       },
     });
@@ -61,9 +71,13 @@ export class MoradorRepository {
    * @returns O objeto do morador atualizado.
    */
   update(id: string, updateMoradorDto: UpdateMoradorDto) {
+    const { condominioId, ...rest } = updateMoradorDto;
     return this.prisma.morador.update({
       where: { id },
-      data: updateMoradorDto,
+      data: {
+        ...rest,
+        ...(condominioId && { condominio: { connect: { id: condominioId } } }),
+      },
     });
   }
 

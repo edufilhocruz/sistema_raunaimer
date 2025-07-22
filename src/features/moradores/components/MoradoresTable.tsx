@@ -8,6 +8,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 interface Props {
   moradores: Morador[];
+  onEdit: (morador: Morador) => void;
+  onDelete: (morador: Morador) => void;
+  onVerHistorico: (morador: Morador) => void;
 }
 
 // Objeto de configuração para o Status de Pagamento
@@ -37,15 +40,18 @@ const CobrancaStatusComponent = React.memo(({ status }: { status?: StatusCobranc
     return <div className="flex items-center gap-2"><span className="sr-only">{config.label}</span>{config.icon}{config.label}</div>;
 });
 
-export const MoradoresTable = React.memo(({ moradores }: Props) => {
+export const MoradoresTable = React.memo(({ moradores, onEdit, onDelete, onVerHistorico }: Props) => {
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>Nome</TableHead>
-          <TableHead>Unidade</TableHead>
+          <TableHead>Condomínio</TableHead>
+          <TableHead>Bloco</TableHead>
+          <TableHead>Apartamento</TableHead>
           <TableHead>Status Pagamento</TableHead>
-          <TableHead>Última Cobrança</TableHead>
+          <TableHead>Tipo de Cobrança</TableHead>
+          <TableHead>Status</TableHead>
           <TableHead>Data do Envio</TableHead>
           <TableHead className="w-[50px]">Ações</TableHead>
         </TableRow>
@@ -58,7 +64,9 @@ export const MoradoresTable = React.memo(({ moradores }: Props) => {
           return (
             <TableRow key={morador.id}>
               <TableCell className="font-medium">{morador.nome}</TableCell>
-              <TableCell>{`${morador.condominio.nome} / ${morador.bloco} - ${morador.apartamento}`}</TableCell>
+              <TableCell>{morador.condominio?.nome}</TableCell>
+              <TableCell>{morador.bloco}</TableCell>
+              <TableCell>{morador.apartamento}</TableCell>
               <TableCell>
                 {pagamentoConfig ? (
                   <Badge variant={pagamentoConfig.variant}>
@@ -68,17 +76,33 @@ export const MoradoresTable = React.memo(({ moradores }: Props) => {
                   <Badge variant="secondary">N/A</Badge>
                 )}
               </TableCell>
+              <TableCell>{morador.ultimaCobrancaTipo || 'N/A'}</TableCell>
               <TableCell>
-                <CobrancaStatusComponent status={morador.ultimaCobrancaStatus} />
+                {morador.ultimaCobrancaStatus === 'Erro' ? (
+                  <Button variant="outline" size="sm" onClick={() => alert('Detalhe do erro da cobrança: motivo fictício ou real se disponível.')}
+                    className="flex items-center gap-2 border-destructive text-destructive">
+                    <XCircle className="h-4 w-4" /> Erro
+                  </Button>
+                ) : (
+                  <Badge variant={morador.ultimaCobrancaStatus === 'Enviado' ? 'default' : 'secondary'}>
+                    {morador.ultimaCobrancaStatus === 'Enviado' ? 'Enviado' : morador.ultimaCobrancaStatus || 'N/A'}
+                  </Badge>
+                )}
+                {/* Status técnico do envio */}
+                <div className="text-xs text-muted-foreground mt-1">
+                  {morador.ultimaCobrancaStatusEnvio === 'ENVIADO' && morador.ultimaCobrancaStatus !== 'Enviado' && 'Enviado'}
+                  {morador.ultimaCobrancaStatusEnvio === 'ERRO' && morador.ultimaCobrancaStatus !== 'Erro' && 'Erro'}
+                  {morador.ultimaCobrancaStatusEnvio === 'NAO_ENVIADO' && morador.ultimaCobrancaStatus !== 'Não Enviado' && 'Não Enviado'}
+                </div>
               </TableCell>
               <TableCell>{morador.ultimaCobrancaData ? new Date(morador.ultimaCobrancaData).toLocaleDateString('pt-BR') : 'N/A'}</TableCell>
               <TableCell>
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
-                        <DropdownMenuItem>Ver Histórico</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Excluir</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onEdit(morador)}>Editar</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onVerHistorico(morador)}>Ver Histórico</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive" onClick={() => onDelete(morador)}>Excluir</DropdownMenuItem>
                     </DropdownMenuContent>
                  </DropdownMenu>
               </TableCell>

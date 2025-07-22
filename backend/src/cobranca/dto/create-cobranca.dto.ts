@@ -1,4 +1,5 @@
 import { IsDateString, IsNotEmpty, IsNumber, IsPositive, IsUUID } from 'class-validator';
+import { StatusEnvio } from '@prisma/client';
 
 export class CreateCobrancaDto {
   @IsNumber()
@@ -21,4 +22,6 @@ export class CreateCobrancaDto {
   @IsUUID('4', { message: 'O ID do modelo de carta deve ser um UUID válido.' })
   @IsNotEmpty({ message: 'O modelo de carta é obrigatório.' })
   modeloCartaId: string;
+
+  statusEnvio?: StatusEnvio;
 }

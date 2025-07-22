@@ -1,4 +1,4 @@
-version: '3.8'
+# docker-compose.yml
 
 services:
   postgres:
@@ -6,12 +6,10 @@ services:
     container_name: raunaimer-db
     restart: always
     ports:
-      # CORREÇÃO: A porta do seu computador (51214) agora está mapeada para a porta do container (5432)
       - "51214:5432" 
     environment:
-      # CORREÇÃO: As credenciais agora correspondem à sua DATABASE_URL
       POSTGRES_USER: ederraunaimer
-      POSTGRES_PASSWORD: 'qbO#2(5&9<Qq' # A senha original, sem codificação de URL
+      POSTGRES_PASSWORD: 'qbO#2(5&9<Qq'
       POSTGRES_DB: raunaimer
     volumes:
       - ./postgres-data:/var/lib/postgresql/data

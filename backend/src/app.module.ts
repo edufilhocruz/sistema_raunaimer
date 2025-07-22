@@ -6,6 +6,14 @@ import { CondominioModule } from './condominio/condominio.module';
 import { MoradorModule } from './morador/morador.module';
 import { CobrancaModule } from './cobranca/cobranca.module';
 import { ModeloCartaModule } from './modelo-carta/modelo-carta.module';
+import { EmailConfigService } from './email-config.service';
+import { EmailConfigController } from './email-config.controller';
+import { PrismaService } from './prisma/prisma.service';
+import { UsuarioService } from './usuario.service';
+import { UsuarioController } from './usuario.controller';
+import { PermissaoService } from './permissao.service';
+import { PermissaoController } from './permissao.controller';
+import { StatusEnvio } from '@prisma/client';
 
 @Module({
   imports: [
@@ -20,7 +28,7 @@ import { ModeloCartaModule } from './modelo-carta/modelo-carta.module';
     CobrancaModule,
     ModeloCartaModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, EmailConfigController, UsuarioController, PermissaoController],
+  providers: [AppService, EmailConfigService, PrismaService, UsuarioService, PermissaoService],
 })
 export class AppModule {}

@@ -18,34 +18,53 @@ const CondominiosPage = () => {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCondominio, setSelectedCondominio] = useState<CondominioFormData | null>(null);
+    const [editId, setEditId] = useState<string | null>(null);
 
     const filteredCondominios = useMemo(() => {
         if (!searchTerm) return condominios;
         return condominios.filter(condo =>
             condo.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            condo.cnpj.includes(searchTerm)
+            (condo.cnpj && condo.cnpj.replace(/\D/g, '').includes(searchTerm.replace(/\D/g, '')))
         );
     }, [condominios, searchTerm]);
 
     const handleSave = async (data: CondominioFormData) => {
         setIsSaving(true);
         try {
-            await condominioService.createCondominio(data);
-            toast({
-                title: "Sucesso!",
-                description: `O condomínio "${data.nome}" foi criado.`,
-            });
+            if (editId) {
+                await condominioService.updateCondominio(editId, data);
+                toast({ title: "Sucesso!", description: `O condomínio "${data.nome}" foi atualizado.` });
+            } else {
+                await condominioService.createCondominio(data);
+                toast({ title: "Sucesso!", description: `O condomínio "${data.nome}" foi criado.` });
+            }
             setIsFormOpen(false);
-            refresh(); // Atualiza a lista na tela
+            setEditId(null);
+            setSelectedCondominio(null);
+            refresh();
         } catch (err) {
-            console.error("Falha ao criar condomínio:", err);
-            toast({
-                variant: "destructive",
-                title: "Erro",
-                description: "Não foi possível criar o condomínio. Verifique os dados e tente novamente.",
-            });
+            console.error("Falha ao salvar condomínio:", err);
+            toast({ variant: "destructive", title: "Erro", description: "Não foi possível salvar o condomínio. Verifique os dados e tente novamente." });
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleEdit = (condo: any) => {
+        setSelectedCondominio({ ...condo });
+        setEditId(condo.id);
+        setIsFormOpen(true);
+    };
+
+    const handleDelete = async (condo: any) => {
+        if (!window.confirm(`Tem certeza que deseja excluir o condomínio "${condo.nome}"?`)) return;
+        try {
+            await condominioService.deleteCondominio(condo.id);
+            toast({ title: "Condomínio excluído com sucesso!" });
+            refresh();
+        } catch (err) {
+            toast({ variant: "destructive", title: "Erro", description: "Não foi possível excluir o condomínio." });
         }
     };
 
@@ -67,19 +86,20 @@ const CondominiosPage = () => {
                             </CardHeader>
                             <CardContent>
                                 {loading && <Skeleton className="h-[300px] w-full" />}
-                                {!loading && !error && <CondominiosTable condominios={filteredCondominios} />}
+                                {!loading && !error && <CondominiosTable condominios={filteredCondominios} onEdit={handleEdit} onDelete={handleDelete} />}
                                 {error && <p className="text-destructive text-center py-10">{error}</p>}
                             </CardContent>
                         </Card>
                     </div>
                 </main>
             </div>
-            <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <Dialog open={isFormOpen} onOpenChange={(open) => { setIsFormOpen(open); if (!open) { setEditId(null); setSelectedCondominio(null); } }}>
                 <DialogContent className="max-w-4xl">
                     <CondominioForm 
                         onSave={handleSave} 
                         isSaving={isSaving} 
-                        onCancel={() => setIsFormOpen(false)}
+                        onCancel={() => { setIsFormOpen(false); setEditId(null); setSelectedCondominio(null); }}
+                        defaultValues={selectedCondominio || undefined}
                     />
                 </DialogContent>
             </Dialog>

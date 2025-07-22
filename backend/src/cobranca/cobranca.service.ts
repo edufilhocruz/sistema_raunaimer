@@ -3,6 +3,7 @@ import { CreateCobrancaDto } from './dto/create-cobranca.dto';
 import { UpdateCobrancaDto } from './dto/update-cobranca.dto';
 import { CobrancaRepository } from './cobranca.repository';
 import { PrismaService } from '../prisma/prisma.service';
+import { StatusEnvio } from '@prisma/client';
 
 @Injectable()
 export class CobrancaService {
@@ -25,7 +26,7 @@ export class CobrancaService {
     if (!condominio) throw new NotFoundException(`Condomínio com ID ${condominioId} não encontrado.`);
     if (!modeloCarta) throw new NotFoundException(`Modelo de Carta com ID ${modeloCartaId} não encontrado.`);
 
-    return this.repository.create(createCobrancaDto);
+    return this.repository.create({ ...createCobrancaDto, statusEnvio: StatusEnvio.ENVIADO });
   }
 
   findAll() {
@@ -48,5 +49,60 @@ export class CobrancaService {
   async remove(id: string) {
     await this.findOne(id); // Garante que a cobrança existe
     return this.repository.remove(id);
+  }
+
+  async getInadimplencia(condominioId?: string) {
+    // Busca todas as cobranças com status ATRASADO e, se fornecido, do condomínio filtrado
+    const where: any = { status: 'ATRASADO' };
+    if (condominioId) where.condominioId = condominioId;
+    const cobrancas = await this.prisma.cobranca.findMany({
+      where,
+      include: {
+        morador: {
+          select: { id: true, nome: true, bloco: true, apartamento: true, condominio: { select: { nome: true } } },
+        },
+        condominio: { select: { nome: true } },
+      },
+    });
+    // Mapeia para o formato esperado pelo frontend
+    return cobrancas.map((c) => {
+      // Calcula dias em atraso
+      const hoje = new Date();
+      const venc = new Date(c.vencimento);
+      const diasAtraso = Math.max(0, Math.floor((hoje.getTime() - venc.getTime()) / (1000 * 60 * 60 * 24)));
+      return {
+        id: c.id,
+        morador: c.morador?.nome || '',
+        unidade: `${c.morador?.bloco || ''}-${c.morador?.apartamento || ''}`,
+        condominio: c.condominio?.nome || '',
+        valor: c.valor,
+        diasAtraso,
+        vencimento: c.vencimento,
+      };
+    });
+  }
+
+  async getHistoricoCobrancas(condominioId?: string, moradorId?: string) {
+    const where: any = {};
+    if (condominioId) where.condominioId = condominioId;
+    if (moradorId) where.moradorId = moradorId;
+    const cobrancas = await this.prisma.cobranca.findMany({
+      where,
+      include: {
+        morador: { select: { nome: true } },
+        condominio: { select: { nome: true } },
+      },
+      orderBy: { dataEnvio: 'desc' },
+    });
+    return cobrancas.map((c) => ({
+      id: c.id,
+      morador: c.morador?.nome || '',
+      condominio: c.condominio?.nome || '',
+      valor: c.valor,
+      dataEnvio: c.dataEnvio,
+      status: c.status,
+      statusEnvio: c.statusEnvio,
+      vencimento: c.vencimento,
+    }));
   }
 }

@@ -19,6 +19,15 @@ const condominioService = {
     const response = await apiClient.post<Condominio>('/condominio', data);
     return response.data;
   },
+
+  updateCondominio: async (id: string, data: CondominioFormData): Promise<Condominio> => {
+    const response = await apiClient.patch<Condominio>(`/condominio/${id}`, data);
+    return response.data;
+  },
+
+  deleteCondominio: async (id: string): Promise<void> => {
+    await apiClient.delete(`/condominio/${id}`);
+  },
 };
 
 export default condominioService;

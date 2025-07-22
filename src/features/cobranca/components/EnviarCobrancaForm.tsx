@@ -8,28 +8,75 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Send } from 'lucide-react';
+import { Send, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { useCondominios } from '@/features/condominio/hooks/useCondominios';
-import { useModelosDeCarta } from '@/features/modelos/hooks/useModelos';
+import { useModelos } from '@/features/modelos/hooks/useModelos';
 import { useMoradoresPorCondominio } from '@/features/moradores/hooks/useMoradoresPorCondominio';
+import cobrancaService from '../services/cobrancaService';
+import { IMaskInput } from 'react-imask';
 
 export const EnviarCobrancaForm = () => {
   const form = useForm<EnviarCobrancaFormData>({ resolver: zodResolver(enviarCobrancaSchema) });
   
   const [selectedCondominio, setSelectedCondominio] = useState<string | null>(null);
-  
+  const [statusEnvio, setStatusEnvio] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
   const { condominioOptions, loading: loadingCondos } = useCondominios();
-  const { modelos, loading: loadingModelos } = useModelosDeCarta();
+  const { modelos, loading: loadingModelos } = useModelos();
   const { moradores, loading: loadingMoradores } = useMoradoresPorCondominio(selectedCondominio);
 
-  function onSubmit(data: EnviarCobrancaFormData) {
-    console.log('Dados para envio:', data);
-    alert('Comando de envio de cobrança registrado!');
+  async function onSubmit(data: EnviarCobrancaFormData) {
+    setStatusEnvio('loading');
+    try {
+      // Monta o payload conforme esperado pelo backend
+      const payload = {
+        valor: Number(data.valorAluguel.replace(/\./g, '').replace(',', '.')),
+        vencimento: new Date().toISOString(), // Substitua pelo campo correto se houver
+        status: 'PENDENTE',
+        condominioId: data.condominioId,
+        moradorId: data.moradorId,
+        modeloCartaId: data.modeloId,
+      };
+      await cobrancaService.criarCobranca(payload);
+      setStatusEnvio('success');
+      setTimeout(() => setStatusEnvio('idle'), 2500);
+    } catch (err) {
+      setStatusEnvio('error');
+      setTimeout(() => setStatusEnvio('idle'), 3500);
+      console.error(err);
+    }
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <Card className="rounded-2xl shadow-sm border">
+    <div className="max-w-4xl mx-auto relative">
+      {/* Loader e blur */}
+      {statusEnvio === 'loading' && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 p-10 bg-white/90 rounded-2xl shadow-lg border-2 border-gold min-w-[340px] min-h-[220px]">
+            <Loader2 className="animate-spin h-14 w-14 text-gold" />
+            <span className="text-gold text-xl font-bold">Processando...</span>
+          </div>
+        </div>
+      )}
+      {/* Sucesso */}
+      {statusEnvio === 'success' && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 p-10 bg-white/90 rounded-2xl shadow-lg min-w-[340px] min-h-[220px]">
+            <CheckCircle2 className="h-14 w-14 text-green-600" />
+            <span className="text-green-700 text-xl font-bold">Cobrança enviada!</span>
+          </div>
+        </div>
+      )}
+      {/* Erro */}
+      {statusEnvio === 'error' && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 p-10 bg-white/90 rounded-2xl shadow-lg border-2 border-destructive min-w-[340px] min-h-[220px]">
+            <XCircle className="h-14 w-14 text-destructive" />
+            <span className="text-destructive text-xl font-bold">Erro: cobrança não enviada</span>
+          </div>
+        </div>
+      )}
+      <Card className={statusEnvio !== 'idle' ? 'rounded-2xl shadow-sm border pointer-events-none select-none blur-sm' : 'rounded-2xl shadow-sm border'}>
         <CardHeader><CardTitle>Enviar Cobrança Individual</CardTitle><CardDescription>Selecione os dados para gerar e enviar uma nova cobrança.</CardDescription></CardHeader>
         <CardContent>
           <Form {...form}>
@@ -61,6 +108,27 @@ export const EnviarCobrancaForm = () => {
                     <FormControl><SelectTrigger><SelectValue placeholder={loadingModelos ? "Carregando..." : "Escolha um modelo..."} /></SelectTrigger></FormControl>
                     <SelectContent>{modelos.map(m => <SelectItem key={m.id} value={m.id}>{m.titulo}</SelectItem>)}</SelectContent>
                   </Select><FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="valorAluguel" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>4. Valor do Aluguel</FormLabel>
+                  <FormControl>
+                    <IMaskInput
+                      mask={Number}
+                      radix="," // pt-BR
+                      thousandsSeparator="."
+                      scale={2}
+                      padFractionalZeros={true}
+                      normalizeZeros={true}
+                      value={field.value !== undefined ? String(field.value) : ''}
+                      onAccept={field.onChange}
+                      placeholder="0,00"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )} />
 

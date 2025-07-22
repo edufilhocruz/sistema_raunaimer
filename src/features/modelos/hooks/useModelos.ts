@@ -28,11 +28,32 @@ export const useModelos = () => {
   }, [fetchModelos]);
 
   const saveModelo = async (modelo: Partial<ModeloCarta>, data: ModeloFormData) => {
-    // ... (lógica de salvar)
+    try {
+      let saved: ModeloCarta;
+      if (modelo.id) {
+        saved = await modeloCartaService.updateModelo(modelo.id, data);
+        toast({ title: 'Modelo atualizado com sucesso!' });
+      } else {
+        saved = await modeloCartaService.createModelo(data);
+        toast({ title: 'Modelo criado com sucesso!' });
+      }
+      await fetchModelos();
+      return saved;
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível salvar o modelo de carta.' });
+      throw error;
+    }
   };
 
   const deleteModelo = async (id: string) => {
-    // ... (lógica de deletar)
+    try {
+      await modeloCartaService.deleteModelo(id);
+      toast({ title: 'Modelo excluído com sucesso!' });
+      await fetchModelos();
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível excluir o modelo de carta.' });
+      throw error;
+    }
   };
 
   return { modelos, loading, saveModelo, deleteModelo };

@@ -1,13 +1,11 @@
-import { IsString, IsNotEmpty, MinLength } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateModeloCartaDto {
-  @IsString()
-  @IsNotEmpty({ message: 'O título é obrigatório.' })
-  @MinLength(5, { message: 'O título deve ter no mínimo 5 caracteres.' })
+  @IsString({ message: 'O título deve ser um texto.' })
+  @IsNotEmpty({ message: 'O título não pode ser vazio.' })
   titulo: string;
 
-  @IsString()
-  @IsNotEmpty({ message: 'O conteúdo é obrigatório.' })
-  @MinLength(10, { message: 'O conteúdo deve ter no mínimo 10 caracteres.' })
+  @IsString({ message: 'O conteúdo deve ser um texto.' })
+  @IsNotEmpty({ message: 'O conteúdo não pode ser vazio.' })
   conteudo: string;
 }
