@@ -1,7 +1,5 @@
-import { DashboardPage } from "@/app/dashboard/page";
+import { DashboardPage } from '@/app/dashboard/page';
 
-const Index = () => {
+export default function Index() {
   return <DashboardPage />;
-};
-
-export default Index;
+}

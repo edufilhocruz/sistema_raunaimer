@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import * as nodemailer from 'nodemailer';
-import { EmailConfigDto } from './email-config.controller';
+// import { EmailConfigDto } from './email-config.controller'; // Removido
 
 @Injectable()
 export class EmailConfigService {
@@ -12,7 +12,7 @@ export class EmailConfigService {
     return this.prisma.emailConfig.findFirst({ orderBy: { updatedAt: 'desc' } });
   }
 
-  async saveConfig(data: EmailConfigDto) {
+  async saveConfig(data: any) {
     // Salva nova configuração (pode ser update ou create)
     const existing = await this.getConfig();
     if (existing) {

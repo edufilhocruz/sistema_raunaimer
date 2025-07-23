@@ -20,7 +20,7 @@ export const EnviarCobrancaForm = () => {
   
   const [selectedCondominio, setSelectedCondominio] = useState<string | null>(null);
   const [statusEnvio, setStatusEnvio] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-
+  
   const { condominioOptions, loading: loadingCondos } = useCondominios();
   const { modelos, loading: loadingModelos } = useModelos();
   const { moradores, loading: loadingMoradores } = useMoradoresPorCondominio(selectedCondominio);

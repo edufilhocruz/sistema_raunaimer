@@ -11,7 +11,7 @@ interface IDashboardService {
 const dashboardService: IDashboardService = {
   getDashboardData: async (): Promise<DashboardData> => {
     try {
-      const response = await apiClient.get<DashboardData>('/dashboard');
+      const response = await apiClient.get<DashboardData>('/dashboard'); // endpoint relativo
       return response.data;
     } catch (error) {
       console.error('Erro ao buscar dados do dashboard:', error);

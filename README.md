@@ -66,3 +66,21 @@ npm run dev
 
 ## 💬 Fale com a gente!
 Dúvidas, sugestões ou quer ver uma demonstração? Entre em contato com a equipe Raunaimer e descubra como podemos revolucionar a gestão do seu condomínio! 🚀 
+
+---
+
+## Tente assim:
+
+```ts
+<code_block_to_apply_changes_from>
+```
+
+---
+
+Se ainda assim der erro, rode:
+```bash
+npm ls @nestjs/throttler
+```
+para ver a versão instalada e consulte a [documentação oficial](https://docs.nestjs.com/security/rate-limiting).
+
+Posso aplicar a configuração com `windowMs` para você? 

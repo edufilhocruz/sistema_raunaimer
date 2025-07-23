@@ -17,9 +17,20 @@ import { StatusEnvio } from '@prisma/client';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { LogAuditoriaService } from './log-auditoria.service';
 import { LogAuditoriaController } from './log-auditoria.controller';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthGuard } from './auth.guard';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 60 segundos
+        limit: 100, // máximo de requisições por IP por minuto
+      },
+    ]),
     BullModule.forRoot({
       redis: {
         host: 'localhost',
@@ -31,8 +42,12 @@ import { LogAuditoriaController } from './log-auditoria.controller';
     CobrancaModule,
     ModeloCartaModule,
     DashboardModule,
+    JwtModule.register({
+      secret: 'sua_chave_secreta_aqui', // Troque por variável de ambiente em produção
+      signOptions: { expiresIn: '1d' },
+    }),
   ],
-  controllers: [AppController, EmailConfigController, UsuarioController, PermissaoController, LogAuditoriaController],
-  providers: [AppService, EmailConfigService, PrismaService, UsuarioService, PermissaoService, LogAuditoriaService],
+  controllers: [AppController, EmailConfigController, UsuarioController, PermissaoController, LogAuditoriaController, AuthController],
+  providers: [AppService, EmailConfigService, PrismaService, UsuarioService, PermissaoService, LogAuditoriaService, AuthService, AuthGuard],
 })
 export class AppModule {}

@@ -20,6 +20,13 @@ export default defineConfig(async ({ mode }) => {
     server: {
       host: "::",
       port: 8080,
+      proxy: {
+        '/api': {
+          target: 'https://localhost:3000',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
     },
     plugins,
     resolve: {

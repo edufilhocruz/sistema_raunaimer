@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsuarioService {
@@ -15,11 +16,15 @@ export class UsuarioService {
 
   async create(data: any) {
     // data.permissoes: array de permissaoId
-    const { permissoes, password, ...rest } = data;
+    const { permissoes, password, senha, ...rest } = data;
+    let senhaHash = senha || password;
+    if (senhaHash) {
+      senhaHash = await bcrypt.hash(senhaHash, 10);
+    }
     const usuario = await this.prisma.usuario.create({
       data: {
         ...rest,
-        senha: password, // mapeia para o campo correto do banco
+        senha: senhaHash,
         permissoes: {
           create: (permissoes || []).map((permissaoId: string) => ({ permissaoId }))
         }
@@ -30,13 +35,18 @@ export class UsuarioService {
   }
 
   async update(id: string, data: any) {
-    const { permissoes, ...rest } = data;
+    const { permissoes, password, senha, ...rest } = data;
+    let senhaHash = senha || password;
+    if (senhaHash) {
+      senhaHash = await bcrypt.hash(senhaHash, 10);
+    }
     // Remove todas as permissões e adiciona as novas
     await this.prisma.permissaoUsuario.deleteMany({ where: { usuarioId: id } });
     return this.prisma.usuario.update({
       where: { id },
       data: {
         ...rest,
+        ...(senhaHash ? { senha: senhaHash } : {}),
         permissoes: {
           create: (permissoes || []).map((permissaoId: string) => ({ permissaoId }))
         }

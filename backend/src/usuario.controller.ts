@@ -1,9 +1,19 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { UsuarioService } from './usuario.service';
+import { AuthGuard } from './auth.guard';
+import { Request } from 'express';
 
 @Controller('usuarios')
+@UseGuards(AuthGuard)
 export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) {}
+
+  @Get('me')
+  me(@Req() req: Request) {
+    if (!req.user) return null;
+    const { senha, ...user } = req.user;
+    return user;
+  }
 
   @Get()
   findAll() {

@@ -63,7 +63,7 @@ export const CobrancasReportFilters = ({ onFilterChange }: Props) => {
                     <label className="block text-sm font-medium text-muted-foreground mb-1">Período</label>
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button variant={"outline"} className={cn("w-full h-12 justify-start text-left font-normal", !dateRange && "text-muted-foreground")}> 
+                            <Button variant={"outline"} className={cn("w-full h-12 justify-start text-left font-normal", !dateRange && "text-muted-foreground")}>
                                 <CalendarIcon className="mr-2 h-4 w-4" />
                                 {dateRange?.from ? ( dateRange.to ? ( <> {format(dateRange.from, "dd/MM/yy", { locale: ptBR })} - {format(dateRange.to, "dd/MM/yy", { locale: ptBR })} </> ) : ( format(dateRange.from, "dd/MM/yy", { locale: ptBR }) ) ) : ( <span>Selecione um período</span> )}
                             </Button>

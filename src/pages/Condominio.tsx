@@ -113,7 +113,7 @@ const CondominiosPage = () => {
                   <CheckCircle2 className="h-14 w-14 text-green-600" />
                   <span className="text-green-700 text-xl font-bold">Condomínio salvo!</span>
                 </div>
-              </DialogContent>
+                </DialogContent>
             </Dialog>
         </>
     );
