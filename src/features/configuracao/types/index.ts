@@ -10,6 +10,7 @@ export interface Usuario {
   email: string;
   role: UsuarioRole;
   status: UsuarioStatus;
+  foto?: string; // Foto de perfil (base64 ou URL)
 }
 
 export const usuarioFormSchema = z.object({
@@ -17,6 +18,7 @@ export const usuarioFormSchema = z.object({
   email: z.string().email("Formato de e-mail inválido."),
   password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres.").optional(),
   role: z.enum(['Admin', 'Operador'], { required_error: "Selecione um tipo de acesso." }),
+  foto: z.string().optional(), // Foto de perfil
 });
 export type UsuarioFormData = z.infer<typeof usuarioFormSchema>;
 

@@ -39,4 +39,11 @@ export class UsuarioController {
   delete(@Param('id') id: string) {
     return this.usuarioService.delete(id);
   }
-} 
+
+  @Get('admin-exists')
+  //@UseGuards() // Remover o guard para este endpoint
+  async adminExists() {
+    const exists = await this.usuarioService.existsAdmin();
+    return { exists };
+  }
+}

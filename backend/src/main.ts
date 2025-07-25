@@ -6,12 +6,13 @@ import helmet from 'helmet';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as cookieParser from 'cookie-parser';
+import { json, urlencoded } from 'express';
 
 async function bootstrap() {
-  // Carrega os certificados SSL
+  // Carrega os certificados SSL de forma absoluta
   const httpsOptions = {
-    key: fs.readFileSync(path.join(__dirname, '../certs/key.pem')),
-    cert: fs.readFileSync(path.join(__dirname, '../certs/cert.pem')),
+    key: fs.readFileSync(path.resolve(__dirname, '../../certs/key.pem')),
+    cert: fs.readFileSync(path.resolve(__dirname, '../../certs/cert.pem')),
   };
 
   const app = await NestFactory.create(AppModule, { httpsOptions });
@@ -34,6 +35,8 @@ async function bootstrap() {
 
   // Adicionado cookieParser para leitura de cookies nas requisições
   app.use(cookieParser());
+  app.use(json({ limit: '5mb' }));
+  app.use(urlencoded({ extended: true, limit: '5mb' }));
 
   const config = new DocumentBuilder()
     .setTitle('Documentação da API')

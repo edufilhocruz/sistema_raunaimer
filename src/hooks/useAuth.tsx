@@ -6,6 +6,7 @@ interface User {
   email: string;
   nome: string;
   role: string;
+  foto?: string; // Adicionado para avatar
 }
 
 interface AuthContextType {
@@ -14,6 +15,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
+  setUser?: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -83,7 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token: null, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, token: null, login, logout, loading, setUser }}>
       {children}
     </AuthContext.Provider>
   );

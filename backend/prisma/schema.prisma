@@ -110,6 +110,7 @@ model Usuario {
   email      String   @unique
   senha      String
   role       String
+  foto       String?  // Foto do usuário (base64, URL ou caminho do arquivo)
   permissoes PermissaoUsuario[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

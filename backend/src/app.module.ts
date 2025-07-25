@@ -22,6 +22,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthGuard } from './auth.guard';
+import { RegisterController } from './register.controller';
 
 @Module({
   imports: [
@@ -47,7 +48,7 @@ import { AuthGuard } from './auth.guard';
       signOptions: { expiresIn: '1d' },
     }),
   ],
-  controllers: [AppController, EmailConfigController, UsuarioController, PermissaoController, LogAuditoriaController, AuthController],
+  controllers: [AppController, EmailConfigController, UsuarioController, PermissaoController, LogAuditoriaController, AuthController, RegisterController],
   providers: [AppService, EmailConfigService, PrismaService, UsuarioService, PermissaoService, LogAuditoriaService, AuthService, AuthGuard],
 })
 export class AppModule {}

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 
@@ -40,6 +40,11 @@ export class UsuarioService {
     if (senhaHash) {
       senhaHash = await bcrypt.hash(senhaHash, 10);
     }
+    // Verifica se o usuário existe antes de atualizar
+    const usuarioExistente = await this.prisma.usuario.findUnique({ where: { id } });
+    if (!usuarioExistente) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
     // Remove todas as permissões e adiciona as novas
     await this.prisma.permissaoUsuario.deleteMany({ where: { usuarioId: id } });
     return this.prisma.usuario.update({
@@ -47,6 +52,7 @@ export class UsuarioService {
       data: {
         ...rest,
         ...(senhaHash ? { senha: senhaHash } : {}),
+        ...(rest.foto !== undefined ? { foto: rest.foto } : {}),
         permissoes: {
           create: (permissoes || []).map((permissaoId: string) => ({ permissaoId }))
         }
@@ -57,5 +63,10 @@ export class UsuarioService {
 
   delete(id: string) {
     return this.prisma.usuario.delete({ where: { id } });
+  }
+
+  async existsAdmin(): Promise<boolean> {
+    const count = await this.prisma.usuario.count({ where: { role: 'Admin' } });
+    return count > 0;
   }
 } 

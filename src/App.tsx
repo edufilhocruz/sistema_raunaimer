@@ -9,6 +9,7 @@ import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
 // A importação de 'ModelosDeCartaProvider' foi removida, pois não é mais necessária.
 
 import Login from './pages/Login';
+import Register from './pages/Register';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 
 // Lazy Loading das Páginas
@@ -52,6 +53,7 @@ const App = () => {
             <React.Suspense fallback={suspenseFallback}>
               <Routes>
                 <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<PrivateRoute><IndexPage /></PrivateRoute>} />
                 <Route path="/condominios" element={<PrivateRoute><CondominiosPage /></PrivateRoute>} />
